@@ -1,0 +1,23 @@
+{
+  "name": "@vbarbarosh/dd",
+  "version": "1.0.0",
+  "description": "An abstraction for working with mouse",
+  "main": "src/dd.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vbarbarosh/dd.git"
+  },
+  "keywords": [
+    "mouse",
+    "dragdrop"
+  ],
+  "author": "Vladimir Barbarosh",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vbarbarosh/dd/issues"
+  },
+  "homepage": "https://github.com/vbarbarosh/dd#readme"
+}
