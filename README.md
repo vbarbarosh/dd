@@ -9,6 +9,6 @@ An abstraction for working with mouse
             console.log('The end');
         },
         move: function (ctx) {
-            console.log(`Position: x=${ctx.x} y={ctx.y}`);
+            console.log(`Position: x=${ctx.x} y={ctx.y}; distance: dx=${ctx.dx} dy=${ctx.dy}`);
         },
     });
