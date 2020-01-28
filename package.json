@@ -5,6 +5,8 @@
   "description": "An abstraction for working with mouse",
   "license": "ISC",
   "main": "src/dd.js",
+  "unpkg": "dist/dd.js",
+  "jsdelivr": "dist/dd.js",
   "scripts": {
     "build": "webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
