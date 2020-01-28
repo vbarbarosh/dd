@@ -1,4 +1,4 @@
-An abstraction for working with a mouse.
+An abstraction for working with the mouse.
 
     dd({
         event, // Pass original event object in
