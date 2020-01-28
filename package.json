@@ -1,9 +1,12 @@
 {
+  "author": "Vladimir Barbarosh",
   "name": "@vbarbarosh/dd",
   "version": "1.0.0",
   "description": "An abstraction for working with mouse",
+  "license": "ISC",
   "main": "src/dd.js",
   "scripts": {
+    "build": "webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -14,10 +17,12 @@
     "mouse",
     "dragdrop"
   ],
-  "author": "Vladimir Barbarosh",
-  "license": "ISC",
   "bugs": {
     "url": "https://github.com/vbarbarosh/dd/issues"
   },
-  "homepage": "https://github.com/vbarbarosh/dd#readme"
+  "homepage": "https://github.com/vbarbarosh/dd#readme",
+  "devDependencies": {
+    "webpack": "^4.41.5",
+    "webpack-cli": "^3.3.10"
+  }
 }
