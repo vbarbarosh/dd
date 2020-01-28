@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://unpkg.com/bootstrap@4.4.1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <title>Hello dd</title>
+    <style>
+        .canvas {
+            position: relative;
+            background: white;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+            width: 600px;
+            height: 480px;
+        }
+        .box {
+            position: absolute;
+            background: #f88;
+            width: 50px;
+            height: 50px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="#">@vbarbarosh/dd</a>
+  <div class="navbar-collapse">
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="https://github.com/vbarbarosh/dd">GitHub</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<div id="app" class="container">
+
+    <h1>Hello dd</h1>
+
+    <br>
+
+    <div class="canvas">
+        <div v-on:mousedown="mousedown($event, p)" v-bind:style="{top: px(p.y), left: px(p.x)}" class="box">
+            {{ p.x }},{{ p.y }}
+        </div>
+    </div>
+
+</div>
+
+<script src="https://unpkg.com/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://unpkg.com/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+<script src="https://unpkg.com/bootstrap@4.4.1/dist/js/bootstrap.min.js"></script>
+<script src="https://unpkg.com/bluebird@3.7.2/js/browser/bluebird.min.js"></script>
+<script src="https://unpkg.com/vue@2.6.11/dist/vue.min.js"></script>
+
+<script src="https://unpkg.com/@vbarbarosh/dd@1.0.2/dist/dd.js"></script>
+
+<script>
+(function () {
+
+    const app = new Vue({
+        el: '#app',
+        data: {
+            p: {x: 100, y: 100},
+        },
+        methods: {
+            px: function (v) {
+                return v ? (v + 'px') : 0;
+            },
+            mousedown: function (event, p) {
+                const x0 = p.x;
+                const y0 = p.y;
+                dd({
+                    event,
+                    move: function ({dx, dy}) {
+                        p.x = x0 + dx;
+                        p.y = y0 + dy;
+                    },
+                });
+            },
+        }
+    });
+
+})();
+</script>
+
+</body>
+</html>
