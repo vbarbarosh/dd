@@ -4,14 +4,16 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://unpkg.com/bootstrap@4.4.1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://unpkg.com/prismjs@1.19.0/themes/prism-okaidia.css" rel="stylesheet" />
     <title>Hello dd</title>
     <style>
+        .h200 { height: 200px; }
+        .xborder-ht { border-top: none; border-left: none; border-right: none; }
+        .app-border { border: 1px solid #e7e7e7; }
         .canvas {
             position: relative;
             background: white;
             box-shadow: 0 0 5px rgba(0,0,0,0.5);
-            width: 600px;
-            height: 480px;
         }
         .box {
             position: absolute;
@@ -27,26 +29,56 @@
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <a class="navbar-brand" href="#">@vbarbarosh/dd</a>
-  <div class="navbar-collapse">
-    <ul class="navbar-nav ml-auto">
-      <li class="nav-item">
-        <a class="nav-link" href="https://github.com/vbarbarosh/dd">GitHub</a>
-      </li>
-    </ul>
-  </div>
+<nav class="navbar navbar-expand-lg navbar-light bg-light app-border xborder-ht">
+    <a class="navbar-brand" href="#"><small>@vbarbarosh/dd</small></a>
+    <div class="collapse navbar-collapse">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="https://github.com/vbarbarosh/dd" target="_blank">
+                    GitHub
+                </a>
+            </li>
+        </ul>
+    </div>
 </nav>
 
 <div id="app" class="container">
 
-    <h1>Hello dd</h1>
+    <br>
+
+    <div>
+        <strong>@vbarbarosh/dd</strong>
+        <br>
+        An abstraction for working with the mouse.
+    </div>
 
     <br>
 
-    <div class="canvas">
-        <div v-on:mousedown="mousedown($event, p)" v-bind:style="{top: px(p.y), left: px(p.x)}" class="box">
-            {{ p.x }},{{ p.y }}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="canvas h200">
+                <div v-on:mousedown="mousedown($event, p)" v-bind:style="{top: px(p.y), left: px(p.x)}" class="box">
+                    {{ p.x }},{{ p.y }}
+                </div>
+            </div>
+        </div>
+        <div v-pre class="col-md-6">
+<pre><code class="lang-html">&lt;div v-on:mousedown="mousedown($event, p)" v-bind:style="{top: px(p.y), left: px(p.x)}" class="box">
+    {{ p.x }},{{ p.y }}
+&lt;/div>
+</code></pre>
+<pre><code class="lang-js">function mousedown(event, p)
+{
+    const x0 = p.x;
+    const y0 = p.y;
+    dd({
+        event,
+        move: function ({dx, dy}) {
+            p.x = x0 + dx;
+            p.y = y0 + dy;
+        },
+    });
+}</code></pre>
         </div>
     </div>
 
@@ -55,10 +87,9 @@
 <script src="https://unpkg.com/jquery@3.4.1/dist/jquery.min.js"></script>
 <script src="https://unpkg.com/popper.js@1.16.0/dist/umd/popper.min.js"></script>
 <script src="https://unpkg.com/bootstrap@4.4.1/dist/js/bootstrap.min.js"></script>
-<script src="https://unpkg.com/bluebird@3.7.2/js/browser/bluebird.min.js"></script>
 <script src="https://unpkg.com/vue@2.6.11/dist/vue.min.js"></script>
-
-<script src="https://unpkg.com/@vbarbarosh/dd@1.0.2/dist/dd.js"></script>
+<script src="https://unpkg.com/@vbarbarosh/dd@1.0.3/dist/dd.js"></script>
+<script src="https://unpkg.com/prismjs@1.19.0/prism.js"></script>
 
 <script>
 (function () {
