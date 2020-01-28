@@ -34,3 +34,10 @@ git add package.json package-lock.json dist
 git commit -m "release v$(node -e 'console.log(require("./package.json").version)')"
 # Create a tag
 git tag v$(node -e 'console.log(require("./package.json").version)')
+
+# Submit changes to github
+git push
+git push --tags
+
+# Publish package on npm
+npm publish
