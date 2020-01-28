@@ -28,7 +28,8 @@ This abstraction comes from the following observations:
    (here is `context.begin`, `context.end`, and `context.move`).
 
 2) Almost always what you is really looking for is
-   *how far a mouse moved from the beginning* (here is `context.dx` and `context.dy`).
+   *how far a mouse was moved from the beginning* (here is
+   `context.dx` and `context.dy`).
 
 3) In general, you have to work with 2 coordinate system:
    the screen coordinates, and local coordinates. And the
