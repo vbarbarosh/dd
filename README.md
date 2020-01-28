@@ -1,6 +1,6 @@
 An abstraction for working with a mouse.
 
-    dd(
+    dd({
         event, // Pass original event object in
         begin: function (ctx) {
             console.log('The beginning');
@@ -19,7 +19,7 @@ An abstraction for working with a mouse.
 
 ## Description
 
-This abstraction comes from the observation that:
+This abstraction comes from the following observations:
 
 1) Each interaction with the mouse has the following workflow:
 
