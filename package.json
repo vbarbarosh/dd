@@ -7,6 +7,10 @@
   "main": "src/dd.js",
   "unpkg": "dist/dd.js",
   "jsdelivr": "dist/dd.js",
+  "files": [
+    "src",
+    "dist/*.js"
+  ],
   "scripts": {
     "build": "webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
