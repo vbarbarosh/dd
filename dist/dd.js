@@ -112,6 +112,9 @@ function dd(context)
         if (typeof context.begin == 'function') {
             context.begin(context);
         }
+        if (typeof context.update == 'function') {
+            context.update(context);
+        }
     }
 
     function end() {
@@ -137,6 +140,9 @@ function dd(context)
         context.dy = context.y - context.y0;
         if (typeof context.move == 'function') {
             context.move(context);
+        }
+        if (typeof context.update == 'function') {
+            context.update(context);
         }
     }
 
