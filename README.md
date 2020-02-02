@@ -17,6 +17,10 @@ An abstraction for working with the mouse.
 
     npm i @vbarbarosh/dd
 
+## Using from browser
+
+    <script src="https://unpkg.com/@vbarbarosh/dd@1.0.6/dist/dd.js"></script>
+
 ## Description
 
 This abstraction comes from the following observations:
