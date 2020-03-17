@@ -5,6 +5,7 @@ function dd(context)
     function begin() {
         document.addEventListener('mousemove', mousemove);
         document.addEventListener('mouseup', mouseup);
+        document.addEventListener('scroll', scroll);
         context.event.preventDefault();
         translate();
         context.x0 = context.x;
@@ -22,6 +23,7 @@ function dd(context)
     function end() {
         document.removeEventListener('mousemove', mousemove);
         document.removeEventListener('mouseup', mouseup);
+        document.removeEventListener('scroll', scroll);
         if (typeof context.end == 'function') {
             context.end(context);
         }
@@ -51,6 +53,13 @@ function dd(context)
     function mouseup(event) {
         context.event = event;
         end();
+    }
+
+    function scroll(event) {
+        context.event = event;
+        if (typeof context.update == 'function') {
+            context.update(context);
+        }
     }
 }
 
