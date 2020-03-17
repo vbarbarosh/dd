@@ -40,3 +40,9 @@ This abstraction comes from the following observations:
    only thing you are interested in is your local coordinates.
    Or, in other words, you have to convert coordinates from
    screen to local (here is `context.translate`).
+
+## Gotchas
+
+* `IFRAME` and `BUTTON[disabled]` stops propagation of mouse
+  events. As a result `dd` will not call `begin` not `update`
+  handlers ([Events and disabled form fields](https://jakearchibald.com/2017/events-and-disabled-form-fields/)).
