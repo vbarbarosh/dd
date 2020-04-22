@@ -104,7 +104,9 @@ function dd(context)
         document.addEventListener('mousemove', mousemove);
         document.addEventListener('mouseup', mouseup);
         document.addEventListener('scroll', scroll);
-        context.event.preventDefault();
+        // Event is required to read clientX, clientY values. Calling
+        // `preventDefault` would narrow its use cases.
+        // context.event.preventDefault();
         translate();
         context.x0 = context.x;
         context.y0 = context.y;
