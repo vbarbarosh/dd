@@ -46,3 +46,9 @@ This abstraction comes from the following observations:
 * `IFRAME` and `BUTTON[disabled]` stops propagation of mouse
   events. As a result `dd` will not call `begin` not `update`
   handlers ([Events and disabled form fields](https://jakearchibald.com/2017/events-and-disabled-form-fields/)).
+
+## Links
+
+* https://github.com/STRML/react-grid-layout
+* https://github.com/STRML/react-draggable
+* https://github.com/STRML/react-resizable
