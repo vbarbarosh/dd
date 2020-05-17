@@ -114,6 +114,10 @@ function dd(context)
         context.y0 = context.y;
         context.dx = 0;
         context.dy = 0;
+        context.client_x0 = context.client_x;
+        context.client_y0 = context.client_y;
+        context.client_dx = 0;
+        context.client_dy = 0;
         if (typeof context.begin == 'function') {
             context.begin(context);
         }
@@ -136,6 +140,8 @@ function dd(context)
     function translate() {
         context.x = context.event.clientX;
         context.y = context.event.clientY;
+        context.client_x = context.event.clientX;
+        context.client_y = context.event.clientY;
         if (typeof context.translate == 'function') {
             context.translate(context);
         }
@@ -146,6 +152,8 @@ function dd(context)
         translate();
         context.dx = context.x - context.x0;
         context.dy = context.y - context.y0;
+        context.client_dx = context.client_x - context.client_x0;
+        context.client_dy = context.client_y - context.client_y0;
         if (typeof context.move == 'function') {
             context.move(context);
         }
