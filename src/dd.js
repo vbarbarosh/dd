@@ -3,6 +3,7 @@ function dd(context)
     begin();
 
     function begin() {
+        document.documentElement.style.pointerEvents = 'none';
         document.addEventListener('mousemove', mousemove);
         document.addEventListener('mouseup', mouseup);
         document.addEventListener('scroll', scroll);
@@ -23,6 +24,7 @@ function dd(context)
     }
 
     function end() {
+        document.documentElement.style.pointerEvents = '';
         document.removeEventListener('mousemove', mousemove);
         document.removeEventListener('mouseup', mouseup);
         document.removeEventListener('scroll', scroll);
