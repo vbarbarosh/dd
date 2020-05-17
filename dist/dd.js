@@ -101,6 +101,7 @@ function dd(context)
     begin();
 
     function begin() {
+        document.documentElement.style.cursor = window.getComputedStyle(context.event.currentTarget).cursor;
         document.documentElement.style.pointerEvents = 'none';
         document.addEventListener('mousemove', mousemove);
         document.addEventListener('mouseup', mouseup);
@@ -122,6 +123,7 @@ function dd(context)
     }
 
     function end() {
+        document.documentElement.style.cursor = '';
         document.documentElement.style.pointerEvents = '';
         document.removeEventListener('mousemove', mousemove);
         document.removeEventListener('mouseup', mouseup);
