@@ -3,7 +3,7 @@ function dd(context)
     begin();
 
     function begin() {
-        document.documentElement.style.cursor = window.getComputedStyle(context.event.currentTarget).cursor;
+        document.documentElement.style.cursor = window.getComputedStyle(context.event.target).cursor;
         document.documentElement.style.pointerEvents = 'none';
         document.addEventListener('mousemove', mousemove);
         document.addEventListener('mouseup', mouseup);
