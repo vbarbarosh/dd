@@ -108,10 +108,10 @@
                 const y0 = p.y;
                 dd({
                     event,
-                    mixins: [dd.prevent_default(), dd.grid(10)],
+                    mixins: [dd.prevent_default(), dd.grid(10), dd.no_pointer_events()],
                     move: function ({dx, dy}) {
-                        p.x = x0 + dx;
-                        p.y = y0 + dy;
+                        p.x = Math.max(0, Math.min(540-50, x0 + dx));
+                        p.y = Math.max(0, Math.min(200-50, y0 + dy));
                     },
                 });
             },
