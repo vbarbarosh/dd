@@ -3,8 +3,6 @@ function dd(context)
     begin();
 
     function begin() {
-        document.documentElement.style.cursor = window.getComputedStyle(context.event.target).cursor;
-        document.documentElement.style.pointerEvents = 'none';
         document.addEventListener('mousemove', mousemove);
         document.addEventListener('mouseup', mouseup);
         document.addEventListener('scroll', scroll);
@@ -29,8 +27,6 @@ function dd(context)
     }
 
     function end() {
-        document.documentElement.style.cursor = '';
-        document.documentElement.style.pointerEvents = '';
         document.removeEventListener('mousemove', mousemove);
         document.removeEventListener('mouseup', mouseup);
         document.removeEventListener('scroll', scroll);
@@ -76,5 +72,59 @@ function dd(context)
         }
     }
 }
+
+dd.grid = function (n) {
+    return {
+        translate: function (ctx) {
+            ctx.x = Math.round(ctx.x/n)*n;
+            ctx.y = Math.round(ctx.y/n)*n;
+        },
+    };
+};
+
+dd.prevent_default = function () {
+    return {
+        begin: function (ctx) {
+            ctx.event.preventDefault();
+        },
+    };
+};
+
+dd.no_pointer_events = function () {
+    return {
+        begin: function (ctx) {
+            document.documentElement.style.cursor = window.getComputedStyle(ctx.event.target).cursor;
+            document.documentElement.style.pointerEvents = 'none';
+        },
+        end: function () {
+            document.documentElement.style.cursor = '';
+            document.documentElement.style.pointerEvents = '';
+        },
+    };
+};
+
+dd.threshold = function (n) {
+    return {
+        begin: function ({dx, dy}) {
+            if (Math.abs(dx) >= n || Math.abs(dy) >= n) {
+                // Remove this mixin
+                // Attach all other mixins
+            }
+            // Stop sending events to other mixins
+        },
+    };
+};
+
+dd.mouse_left = function () {
+    return {
+        begin: function (ctx) {
+            if (ctx.event.button != 0) {
+                // Cancel dnd
+                // All registered mixins should be unregistered
+            }
+            console.log('mouse_left', ctx.event.button, ctx.event.buttons);
+        },
+    };
+};
 
 export default dd;
