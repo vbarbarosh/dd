@@ -1,3 +1,10 @@
+// Features
+// + translate coordinates into client space
+// + handle scroll event
+// - prevent execution of several dd in parallel
+// - start when left button was pressed
+// - cancel when mouse button was released outside, then moved inside
+
 function dd(context)
 {
     begin();
