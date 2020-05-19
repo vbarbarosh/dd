@@ -96,13 +96,18 @@ var dd =
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+// Features
+// + translate coordinates into client space
+// + handle scroll event
+// - prevent execution of several dd in parallel
+// - start when left button was pressed
+// - cancel when mouse button was released outside, then moved inside
+
 function dd(context)
 {
     begin();
 
     function begin() {
-        document.documentElement.style.cursor = window.getComputedStyle(context.event.target).cursor;
-        document.documentElement.style.pointerEvents = 'none';
         document.addEventListener('mousemove', mousemove);
         document.addEventListener('mouseup', mouseup);
         document.addEventListener('scroll', scroll);
@@ -118,23 +123,24 @@ function dd(context)
         context.client_y0 = context.client_y;
         context.client_dx = 0;
         context.client_dy = 0;
-        if (typeof context.begin == 'function') {
-            context.begin(context);
-        }
-        if (typeof context.update == 'function') {
-            context.update(context);
-        }
+        // if (typeof context.begin == 'function') {
+        //     context.begin(context);
+        // }
+        // if (typeof context.update == 'function') {
+        //     context.update(context);
+        // }
+        run('begin');
+        run('update');
     }
 
     function end() {
-        document.documentElement.style.cursor = '';
-        document.documentElement.style.pointerEvents = '';
         document.removeEventListener('mousemove', mousemove);
         document.removeEventListener('mouseup', mouseup);
         document.removeEventListener('scroll', scroll);
-        if (typeof context.end == 'function') {
-            context.end(context);
-        }
+        // if (typeof context.end == 'function') {
+        //     context.end(context);
+        // }
+        run('end');
     }
 
     function translate() {
@@ -142,9 +148,10 @@ function dd(context)
         context.y = context.event.clientY;
         context.client_x = context.event.clientX;
         context.client_y = context.event.clientY;
-        if (typeof context.translate == 'function') {
-            context.translate(context);
-        }
+        // if (typeof context.translate == 'function') {
+        //     context.translate(context);
+        // }
+        run('translate');
     }
 
     function mousemove(event) {
@@ -154,12 +161,14 @@ function dd(context)
         context.dy = context.y - context.y0;
         context.client_dx = context.client_x - context.client_x0;
         context.client_dy = context.client_y - context.client_y0;
-        if (typeof context.move == 'function') {
-            context.move(context);
-        }
-        if (typeof context.update == 'function') {
-            context.update(context);
-        }
+        // if (typeof context.move == 'function') {
+        //     context.move(context);
+        // }
+        // if (typeof context.update == 'function') {
+        //     context.update(context);
+        // }
+        run('move');
+        run('update');
     }
 
     function mouseup(event) {
@@ -173,7 +182,67 @@ function dd(context)
             context.update(context);
         }
     }
+
+    function run(name) {
+        const tmp = Array.isArray(context.mixins) ? context.mixins.map(v => v[name]) : [];
+        tmp.push(context[name]);
+        tmp.filter(v => typeof v == 'function').forEach(fn => fn(context));
+    }
 }
+
+dd.grid = function (n) {
+    return {
+        translate: function (ctx) {
+            ctx.x = Math.round(ctx.x/n)*n;
+            ctx.y = Math.round(ctx.y/n)*n;
+        },
+    };
+};
+
+dd.prevent_default = function () {
+    return {
+        begin: function (ctx) {
+            ctx.event.preventDefault();
+        },
+    };
+};
+
+dd.no_pointer_events = function () {
+    return {
+        begin: function (ctx) {
+            document.documentElement.style.cursor = window.getComputedStyle(ctx.event.target).cursor;
+            document.documentElement.style.pointerEvents = 'none';
+        },
+        end: function () {
+            document.documentElement.style.cursor = '';
+            document.documentElement.style.pointerEvents = '';
+        },
+    };
+};
+
+// dd.threshold = function (n) {
+//     return {
+//         begin: function ({dx, dy}) {
+//             if (Math.abs(dx) >= n || Math.abs(dy) >= n) {
+//                 // Remove this mixin
+//                 // Attach all other mixins
+//             }
+//             // Stop sending events to other mixins
+//         },
+//     };
+// };
+//
+// dd.mouse_left = function () {
+//     return {
+//         begin: function (ctx) {
+//             if (ctx.event.button != 0) {
+//                 // Cancel dnd
+//                 // All registered mixins should be unregistered
+//             }
+//             console.log('mouse_left', ctx.event.button, ctx.event.buttons);
+//         },
+//     };
+// };
 
 /* harmony default export */ __webpack_exports__["default"] = (dd);
 
