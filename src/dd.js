@@ -18,21 +18,24 @@ function dd(context)
         context.client_y0 = context.client_y;
         context.client_dx = 0;
         context.client_dy = 0;
-        if (typeof context.begin == 'function') {
-            context.begin(context);
-        }
-        if (typeof context.update == 'function') {
-            context.update(context);
-        }
+        // if (typeof context.begin == 'function') {
+        //     context.begin(context);
+        // }
+        // if (typeof context.update == 'function') {
+        //     context.update(context);
+        // }
+        run('begin');
+        run('update');
     }
 
     function end() {
         document.removeEventListener('mousemove', mousemove);
         document.removeEventListener('mouseup', mouseup);
         document.removeEventListener('scroll', scroll);
-        if (typeof context.end == 'function') {
-            context.end(context);
-        }
+        // if (typeof context.end == 'function') {
+        //     context.end(context);
+        // }
+        run('end');
     }
 
     function translate() {
@@ -40,9 +43,10 @@ function dd(context)
         context.y = context.event.clientY;
         context.client_x = context.event.clientX;
         context.client_y = context.event.clientY;
-        if (typeof context.translate == 'function') {
-            context.translate(context);
-        }
+        // if (typeof context.translate == 'function') {
+        //     context.translate(context);
+        // }
+        run('translate');
     }
 
     function mousemove(event) {
@@ -52,12 +56,14 @@ function dd(context)
         context.dy = context.y - context.y0;
         context.client_dx = context.client_x - context.client_x0;
         context.client_dy = context.client_y - context.client_y0;
-        if (typeof context.move == 'function') {
-            context.move(context);
-        }
-        if (typeof context.update == 'function') {
-            context.update(context);
-        }
+        // if (typeof context.move == 'function') {
+        //     context.move(context);
+        // }
+        // if (typeof context.update == 'function') {
+        //     context.update(context);
+        // }
+        run('move');
+        run('update');
     }
 
     function mouseup(event) {
@@ -70,6 +76,12 @@ function dd(context)
         if (typeof context.update == 'function') {
             context.update(context);
         }
+    }
+
+    function run(name) {
+        const tmp = Array.isArray(context.mixins) ? context.mixins.map(v => v[name]) : [];
+        tmp.push(context[name]);
+        tmp.filter(v => typeof v == 'function').forEach(fn => fn(context));
     }
 }
 
@@ -103,28 +115,28 @@ dd.no_pointer_events = function () {
     };
 };
 
-dd.threshold = function (n) {
-    return {
-        begin: function ({dx, dy}) {
-            if (Math.abs(dx) >= n || Math.abs(dy) >= n) {
-                // Remove this mixin
-                // Attach all other mixins
-            }
-            // Stop sending events to other mixins
-        },
-    };
-};
-
-dd.mouse_left = function () {
-    return {
-        begin: function (ctx) {
-            if (ctx.event.button != 0) {
-                // Cancel dnd
-                // All registered mixins should be unregistered
-            }
-            console.log('mouse_left', ctx.event.button, ctx.event.buttons);
-        },
-    };
-};
+// dd.threshold = function (n) {
+//     return {
+//         begin: function ({dx, dy}) {
+//             if (Math.abs(dx) >= n || Math.abs(dy) >= n) {
+//                 // Remove this mixin
+//                 // Attach all other mixins
+//             }
+//             // Stop sending events to other mixins
+//         },
+//     };
+// };
+//
+// dd.mouse_left = function () {
+//     return {
+//         begin: function (ctx) {
+//             if (ctx.event.button != 0) {
+//                 // Cancel dnd
+//                 // All registered mixins should be unregistered
+//             }
+//             console.log('mouse_left', ctx.event.button, ctx.event.buttons);
+//         },
+//     };
+// };
 
 export default dd;
