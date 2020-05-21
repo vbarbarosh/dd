@@ -5,11 +5,15 @@
 // - start when left button was pressed
 // - cancel when mouse button was released outside, then moved inside
 
+let active = 0;
+
 function dd(context)
 {
     begin();
 
     function begin() {
+        active++;
+        dd.log('begin');
         document.addEventListener('mousemove', mousemove);
         document.addEventListener('mouseup', mouseup);
         document.addEventListener('scroll', scroll);
@@ -36,6 +40,8 @@ function dd(context)
     }
 
     function end() {
+        active--;
+        dd.log('end');
         document.removeEventListener('mousemove', mousemove);
         document.removeEventListener('mouseup', mouseup);
         document.removeEventListener('scroll', scroll);
@@ -57,6 +63,7 @@ function dd(context)
     }
 
     function mousemove(event) {
+        dd.log('mousemove');
         context.event = event;
         translate();
         context.dx = context.x - context.x0;
@@ -91,6 +98,13 @@ function dd(context)
         tmp.filter(v => typeof v == 'function').forEach(fn => fn(context));
     }
 }
+
+dd.debug = false;
+dd.log = function (method) {
+    if (dd.debug) {
+        console.log(`dd active=${active}`, method);
+    }
+};
 
 dd.grid = function (n) {
     return {
