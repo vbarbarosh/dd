@@ -31,7 +31,7 @@ This abstraction comes from the following observations:
 
    (here is `context.begin`, `context.end`, and `context.move`).
 
-2) Almost always what you is really looking for is
+2) Almost always what you are really looking for is
    *how far a mouse was moved from the beginning* (here is
    `context.dx` and `context.dy`).
 
