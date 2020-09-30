@@ -1,0 +1,77 @@
+<pre>
+Postpone begin event: [delay/threshold] -> begin -> move -> end
+</pre>
+<button id="button">begin</button>
+
+<script>
+document.querySelector('#button').addEventListener('mousedown', function (event) {
+    dnd({
+        event, 
+        threshold: function ({dx, dy}) {
+            return Math.sqrt(dx*dx + dy*dy) > 5;
+        },
+        begin: function () {
+            console.log('begin');
+        },
+        end: function () {
+            console.log('end');
+        },
+        move: function () {
+            console.log('move');
+        }
+    });
+});
+
+function dnd(ctx)
+{
+    begin();
+    function begin() {
+        document.addEventListener('mouseup', mouseup);
+        document.addEventListener('mousemove', mousemove);
+        translate();
+        ctx.is_started = false;
+        ctx.x0 = ctx.x;
+        ctx.y0 = ctx.y;
+        ctx.dx = 0;
+        ctx.dy = 0;
+        threshold();
+    }
+    function end() {
+        document.removeEventListener('mouseup', mouseup);
+        document.removeEventListener('mousemove', mousemove);
+        if (threshold()) {
+            ctx.end(ctx);
+        }
+    }
+    function translate() {
+        ctx.x = ctx.event.clientX;
+        ctx.y = ctx.event.clientY;
+    }
+    function move() {
+        ctx.dx = ctx.x - ctx.x0;
+        ctx.dy = ctx.y - ctx.y0;
+        if (threshold()) {
+            ctx.move(ctx);
+        }
+    }
+    function mouseup(event) {
+        ctx.event = event;
+        end();
+    }
+    function mousemove(event) {
+        ctx.event = event;
+        translate();
+        move();
+    }
+    function threshold() {
+        if (ctx.is_started) {
+            return true;
+        }
+        if (ctx.threshold(ctx)) {
+            ctx.is_started = true;
+            ctx.begin(ctx);
+        }
+        return false;
+    }
+}
+</script>

@@ -1,0 +1,102 @@
+<pre>
+dnd({
+    mixins: [
+        dnd.mouse_left(),        // should start only if left button was pressed
+        dnd.prevent_default(),   // call ctx.event.preventDefault()
+        dnd.threshold(5),        // wait 5px before start
+        dnd.threshold_ms(1000),  // wait 1sec before start
+        dnd.cursor('move'),      // set cursor:move while running
+        dnd.no_pointer_events(), // set pointer-events:none while running
+        dnd.autoscroll(),        // perform autoscroll while running
+        dnd.esc_cancel(),        // cancel if ESC key was pressed
+    ],
+    begin: function () {
+        console.log('begin');
+    },
+    end: function () {
+        console.log('end');
+    },
+    move: function () {
+        console.log('move');
+    },
+});
+esc = esc_cancel(inst.end);
+await inst.promise();
+esc.end();
+
+Postpone begin event: [delay/threshold] begin -> move -> end
+</pre>
+<button id="button">begin</button>
+flo
+<script>
+document.querySelector('#button').addEventListener('mousedown', function (event) {
+    dnd({
+        event, 
+        threshold: function ({dx, dy}) {
+            return Math.abs(dx) > 5 || Math.abs(dy) > 5;
+        },
+        begin: function () {
+            console.log('begin');
+        },
+        end: function () {
+            console.log('end');
+        },
+        move: function () {
+            console.log('move');
+        }
+    });
+});
+
+function dnd(ctx)
+{
+    begin();
+    function begin() {
+        document.addEventListener('mousemove', mousemove);
+        document.addEventListener('mouseup', mouseup);
+        translate();
+        ctx.is_started = false;
+        ctx.x0 = ctx.x;
+        ctx.y0 = ctx.y;
+        ctx.dx = 0;
+        ctx.dy = 0;
+        threshold();
+    }
+    function end() {
+        document.removeEventListener('mousemove', mousemove);
+        document.removeEventListener('mouseup', mouseup);
+        if (threshold()) {
+            ctx.end(ctx);
+        }
+    }
+    function translate() {
+        ctx.x = ctx.event.clientX;
+        ctx.y = ctx.event.clientY;
+    }
+    function move() {
+        ctx.dx = ctx.x - ctx.x0;
+        ctx.dy = ctx.y - ctx.y0;
+        if (threshold()) {
+            ctx.move(ctx);
+        }
+    }
+    function mousemove(event) {
+        ctx.event = event;
+        translate();
+        move();
+    }
+    function mouseup(event) {
+        ctx.event = event;
+        end();
+    }
+    function threshold() {
+        if (ctx.is_started) {
+            return true;
+        }
+        if (ctx.threshold(ctx)) {
+            ctx.is_started = true;
+            ctx.begin(ctx);
+        }
+        return false;
+    }
+}
+</script>

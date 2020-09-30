@@ -1,0 +1,138 @@
+<pre>
+function dom_cursor(value) {
+    const orig = document.documentElement.style.cursor;
+    document.documentElement.style.cursor = value;
+    return {end};
+    function end() {
+        document.documentElement.style.cursor = orig;
+    }
+}
+function dom_no_pointer_events() {
+    const orig = document.documentElement.style.pointerEvents;
+    document.documentElement.style.pointerEvents = 'none';
+    return {end};
+    function end() {
+        document.documentElement.style.pointerEvents = orig;
+    }
+}
+function autoscroll() {
+    const timer = setInterval(update, 10);
+    document.addEventListener('mousemove', mousemove);
+    return {end};
+    function end() {
+        clearInterval(timer);
+        removeEventListener('mousemove', mousemove);
+    }
+    function update() {
+    }
+    function mousemove(event) {
+    }
+}
+dnd({
+    mixins: [
+        dnd.mouse_left(),        // should start only if left button was pressed
+        dnd.prevent_default(),   // call ctx.event.preventDefault()
+        dnd.threshold(5),        // wait 5px before start
+        dnd.threshold_ms(1000),  // wait 1sec before start
+        dnd.cursor('move'),      // set cursor:move while running
+        dnd.no_pointer_events(), // set pointer-events:none while running
+        dnd.autoscroll(),        // perform autoscroll while running
+        dnd.esc_cancel(),        // cancel if ESC key was pressed
+    ],
+    attach: function (ctx, {begin, end}) {
+        begin();
+        ctx.end_items.push(end);
+    },
+    begin: function () {
+        console.log('begin');
+    },
+    end_items: [],
+    end: function () {
+        this.end_items.forEach(fn => fn());
+        console.log('end');
+    },
+    update: function (ctx) {
+        if (!ctx.is_started) {
+            if (Math.sqrt(ctx.dx*ctx.dx + ctx.dy*.ctx.dy) < 5) {
+                return;
+            }
+            ctx.started = true;
+        }
+        if (!ctx.started) {
+            ctx.started = ctx.started || Math.sqrt(ctx.dx*ctx.dx + ctx.dy*.ctx.dy) > 5;
+            if (!ctx.started) {
+                return;
+            }
+        }
+    },
+    move: function () {
+        console.log('move');
+    },
+});
+Postpone begin event: [delay/threshold] begin -> move -> end
+</pre>
+<button id="button">begin</button>
+
+<script>
+document.querySelector('#button').addEventListener('mousedown', function (event) {
+    const inst = dnd({
+        event, 
+        begin: function () {
+            console.log('begin');
+        },
+        end: function () {
+            console.log('end');
+        },
+        move: function () {
+            console.log('move');
+        }
+    });
+});
+
+function dnd(options)
+{
+    const ctx = {
+        mixins: options.mixins || [],
+    };
+    ctx.mixins.push(options);
+    begin();
+    function begin() {
+        document.addEventListener('mousemove', mousemove);
+        document.addEventListener('mouseup', mouseup);
+        translate();
+        ctx.x0 = ctx.x;
+        ctx.y0 = ctx.y;
+        ctx.dx = 0;
+        ctx.dy = 0;
+        ctx.begin(ctx);
+    }
+    function end() {
+        document.removeEventListener('mousemove', mousemove);
+        document.removeEventListener('mouseup', mouseup);
+        ctx.end(ctx);
+    }
+    function translate() {
+        ctx.x = ctx.event.clientX;
+        ctx.y = ctx.event.clientY;
+        ctx.mixins.forEach(function (mixin) {
+            if (typeof mixin.translate == 'function') {
+                mixin.translate(ctx);
+            }
+        });
+    }
+    function move() {
+        ctx.dx = ctx.x - ctx.x0;
+        ctx.dy = ctx.y - ctx.y0;
+        ctx.move(ctx);
+    }
+    function mousemove(event) {
+        ctx.event = event;
+        translate();
+        move();
+    }
+    function mouseup(event) {
+        ctx.event = event;
+        end();
+    }
+}
+</script>

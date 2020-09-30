@@ -1,0 +1,79 @@
+<pre>
+* The most basic workflow for working with a mouse: begin -> move -> end
+* Possibility to send update event (e.g. autoscroll, after container was scrolled top,left of its elements was changed)
+</pre>
+<button id="button">begin</button>
+
+<script>
+document.querySelector('#button').addEventListener('mousedown', function (event) {
+    const inst = dnd({
+        event, 
+        begin: function () {
+            console.log('begin');
+        },
+        end: function () {
+            console.log('end');
+        },
+        move: function () {
+            console.log('move');
+        }
+    });
+    setTimeout(inst.end, 1000);
+});
+
+function dnd(ctx)
+{
+    ctx.dnd = {
+        ctx,
+        end,
+        update,
+        promise
+    };
+    begin();
+    return {end, update};
+    function begin() {
+        document.addEventListener('mouseup', mouseup);
+        document.addEventListener('mousemove', mousemove);
+        translate();
+        ctx.x0 = ctx.x;
+        ctx.y0 = ctx.y;
+        ctx.dx = 0;
+        ctx.dy = 0;
+        if (ctx.begin) {
+            ctx.begin(ctx);
+        }
+        update();
+    }
+    function end() {
+        document.removeEventListener('mouseup', mouseup);
+        document.removeEventListener('mousemove', mousemove);
+        ctx.end(ctx);
+    }
+    function translate() {
+        ctx.x = ctx.event.clientX;
+        ctx.y = ctx.event.clientY;
+    }
+    function move() {
+        ctx.dx = ctx.x - ctx.x0;
+        ctx.dy = ctx.y - ctx.y0;
+        if (ctx.move) {
+            ctx.move(ctx);
+        }
+        update();
+    }
+    function update() {
+        if (ctx.update) {
+            ctx.update(ctx);
+        }
+    }
+    function mouseup(event) {
+        ctx.event = event;
+        end();
+    }
+    function mousemove(event) {
+        ctx.event = event;
+        translate();
+        move();
+    }
+}
+</script>
