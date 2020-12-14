@@ -1,9 +1,9 @@
 {
-  "author": "Vladimir Barbarosh",
+  "author": "Vladimir Barbaros",
   "name": "@vbarbarosh/dd",
   "version": "1.2.5",
-  "description": "An abstraction for working with mouse",
-  "license": "ISC",
+  "description": "An abstraction for working with the mouse",
+  "license": "MIT",
   "main": "src/dd.js",
   "unpkg": "dist/dd.js",
   "jsdelivr": "dist/dd.js",
