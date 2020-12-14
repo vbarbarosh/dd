@@ -19,7 +19,7 @@ An abstraction for working with the mouse.
 
 ## Using from browser
 
-    <script src="https://unpkg.com/@vbarbarosh/dd@1.0.6/dist/dd.js"></script>
+    <script src="https://unpkg.com/@vbarbarosh/dd@1.3.0/dist/dd.js"></script>
 
 ## Description
 
