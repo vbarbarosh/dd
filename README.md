@@ -53,3 +53,4 @@ This abstraction comes from the following observations:
 * https://github.com/STRML/react-draggable
 * https://github.com/STRML/react-resizable
 * https://github.com/AlexeyBoiko/DgrmJS
+* https://www.youtube.com/watch?v=IEZ2bdMbSwI
