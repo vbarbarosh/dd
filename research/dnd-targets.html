@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://unpkg.com/@vbarbarosh/smcss@0.8.1/dist/reset.css" rel="stylesheet">
+    <link href="https://unpkg.com/@vbarbarosh/smcss@0.8.1/dist/sm.css" rel="stylesheet">
+    <title>dnd • targets</title>
+    <style>
+        li {
+            transition: all 0.1s;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+
+    <div class="flex-row mi15">
+        <ul ref="target1" class="xm xp mg5 w200 dashed">
+            <li v-for="item in items1"
+                v-on:mousedown="mousedown_item($event, item)"
+                v-bind:key="item.id"
+                v-bind:class="{red: selection.includes(item)}"
+                class="flex-row flex-align-center mi5 border">
+                <span>{{ item.id }} {{ item.title }}</span>
+            </li>
+        </ul>
+        <ul ref="target2" class="xm xp mg5 w200 dashed">
+            <li v-for="item in items2"
+                v-on:mousedown="mousedown_item($event, item)"
+                v-bind:key="item.id"
+                v-bind:class="{red: selection.includes(item)}"
+                class="flex-row flex-align-center mi5 border">
+                <span>{{ item.id }} {{ item.title }}</span>
+            </li>
+        </ul>
+        <ul ref="target3" class="xm xp mg5 w200 dashed">
+            <li v-for="item in items3"
+                v-on:mousedown="mousedown_item($event, item)"
+                v-bind:key="item.id"
+                v-bind:class="{red: selection.includes(item)}"
+                class="flex-row flex-align-center mi5 border">
+                <span>{{ item.id }} {{ item.title }}</span>
+            </li>
+        </ul>
+    </div>
+
+    <div v-if="dnd_feedback" v-bind:style="dnd_feedback.style" class="fix yellow bs1 o25"></div>
+
+</div>
+
+<script src="https://unpkg.com/jquery@3.6.3/dist/jquery.js"></script>
+<script src="https://unpkg.com/bluebird@3.7.2/js/browser/bluebird.js"></script>
+<script src="https://unpkg.com/vue@2.7.14/dist/vue.js"></script>
+<script src="../dist/dd.js"></script>
+<script>
+new Vue({
+    el: '#app',
+    data: {
+        items1: [
+            {id: 1, title: 'Praesent eleifend'},
+            {id: 2, title: 'Pellentesque sed venenatis eros, non auctor arcu'},
+            {id: 3, title: 'Ut scelerisque, erat et tempus tincidunt, risus est vehicula urna, ac porttitor risus nibh vitae lorem. Morbi posuere laoreet quam sed pretium. Sed scelerisque velit elit, sed tristique quam suscipit non. Donec gravida tristique justo, ac sagittis enim faucibus ac. Cras porttitor erat non quam iaculis, vel interdum mauris lacinia. Duis quis leo feugiat, ultrices nulla finibus, lacinia tellus. Pellentesque eu tortor est. Praesent quam felis, interdum ut risus eget, ornare tempus erat'},
+            {id: 4, title: 'Cras luctus, ante a fermentum congue'},
+            {id: 5, title: 'Aliquam in vestibulum dolor'},
+            {id: 6, title: 'Pellentesque ut lorem dui'},
+            {id: 7, title: 'Proin ultricies, sapien vitae venenatis placerat'},
+            {id: 8, title: 'Mauris lacus nunc'},
+            {id: 9, title: 'Nunc facilisis turpis ac erat blandit consequat et vel nibh'},
+            {id: 10, title: 'Sed ultrices ac arcu quis malesuada'},
+        ],
+        items2: [
+            {id: 11, title: 'Cras ornare cursus accumsan'},
+            {id: 12, title: 'Sed id posuere felis. Sed dapibus ex feugiat bibendum mollis.'},
+            {id: 13, title: 'Nullam eu sapien dolor.'},
+            {id: 14, title: 'Proin fermentum nunc eu dui dictum, ac bibendum est laoreet.'},
+            {id: 15, title: 'Pellentesque elementum enim a neque ultricies, nec venenatis magna tristique.'},
+            {id: 16, title: 'Mauris sem felis, molestie sit amet ligula et, convallis porta ex. Nulla et ex vel mauris gravida bibendum.'},
+            {id: 17, title: 'Nam sollicitudin vel erat ac rhoncus. Sed leo neque, commodo accumsan ornare vitae, pellentesque at lorem.'},
+            {id: 18, title: 'Phasellus elementum consequat accumsan. Nunc eget varius turpis. Aenean vehicula vestibulum condimentum. Mauris nibh risus, rhoncus a neque sit amet, pharetra imperdiet mauris.'},
+            {id: 19, title: 'Proin vel aliquet elit.'},
+            {id: 20, title: 'Pellentesque neque diam, lobortis et massa a, lacinia placerat justo.'},
+        ],
+        items3: [],
+        selection: [],
+        dnd_feedback: null,
+    },
+    methods: {
+        mousedown_item: function (event, item) {
+            const _this = this;
+            const targets = [];
+            const target_groups = [
+                {container: this.$refs.target1, items: this.items1},
+                {container: this.$refs.target2, items: this.items2},
+                {container: this.$refs.target3, items: this.items3},
+            ];
+            const parent = event.currentTarget.parentElement;
+            const parent_r0 = parent.getBoundingClientRect();
+            const elem_item = event.currentTarget;
+            const elem_r0 = event.currentTarget.getBoundingClientRect();
+            this.selection = [item];
+            const scrollbars = [];
+            target_groups.forEach(function ({container}) {
+                scrollbars.push(...elem_ancestors(container));
+            });
+            let target_prev;
+            dd({
+                event,
+                mixins: [
+                    dd.prevent_default(),
+                    dd.no_pointer_events(),
+                ],
+                begin: function () {
+                    _this.dnd_feedback = {style: ''};
+                    target_groups.forEach(function ({container, items}) {
+                        const r = container.getBoundingClientRect();
+                        targets.push({items, i: 0, p: {x: r.left, y: r.top}});
+                        targets.push({items, i: items.length, p: {x: r.left, y: r.bottom}});
+                        let k = 0;
+                        let display;
+                        Array.from(container.children).forEach(function (elem, i) {
+                            if (elem === elem_item) {
+                                display = elem_item.style.display;
+                                elem_item.style.display = 'none';
+                                target_prev = {items, i};
+                                k = 1;
+                                return;
+                            }
+                            const r = elem.getBoundingClientRect();
+                            targets.push({items, i: i - k, p: {x: r.left, y: r.top}});
+                            targets.push({items, i: i - k + 1, p: {x: r.left, y: r.bottom}});
+                        });
+                        if (k) {
+                            elem_item.style.display = display;
+                        }
+                    });
+                },
+                end: function () {
+                    _this.dnd_feedback = null;
+                },
+                update: function ({x, y, x0, y0}) {
+                    const parent_r1 = parent.getBoundingClientRect();
+                    const ox = x0 - elem_r0.left;
+                    const oy = y0 - elem_r0.top;
+                    const sx = parent_r1.left - parent_r0.left;
+                    const sy = parent_r1.top - parent_r0.top;
+                    _this.dnd_feedback.style = `left:${px(x-ox)};top:${px(y-oy)};width:${px(elem_r0.width)};height:${px(elem_r0.height)}`;
+                    const target = targets[array_closest(targets, v => point_distance_sqr(x-ox-sx, y-oy-sy, v.p.x, v.p.y))];
+                    const scrollpos = scrollbars.map(elem_scrollget);
+                    target_prev.items.splice(target_prev.items.indexOf(item), 1);
+                    target.items.splice(target.i, 0, item);
+                    target_prev = target;
+                    _this.$nextTick(function () {
+                        scrollbars.forEach((elem,i) => elem_scrollset(elem, scrollpos[i]));
+                    });
+                },
+            });
+        },
+    },
+});
+function px(value) {
+    return value ? `${value}px` : '0';
+}
+function elem_scrollget(elem) {
+    return {x: elem.scrollLeft, y: elem.scrollTop};
+}
+function elem_scrollset(elem, p) {
+    elem.scrollTo(p.x, p.y);
+}
+function elem_ancestors(elem) {
+    const out = [];
+    for (let p = elem, i = 0; p && i < 50; p = p.parentElement, ++i) {
+        out.push(p);
+    }
+    return out;
+}
+function elem_cut(elem, fn) {
+    const {parentElement, nextSibling} = elem;
+    const r = parentElement.getBoundingClientRect();
+    const h = parentElement.style.height;
+    parentElement.style.height = px(r.height);
+    parentElement.appendChild(elem);
+    try {
+        return fn(Array.from(parentElement.children));
+    }
+    finally {
+        parentElement.insertBefore(elem, nextSibling);
+        parentElement.style.height = h;
+    }
+}
+function point_distance(x1, y1, x2, y2)
+{
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    return Math.sqrt(dx*dx + dy*dy);
+}
+function point_distance_sqr(x1, y1, x2, y2)
+{
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    return dx*dx + dy*dy;
+}
+function array_closest(array, fn)
+{
+    let min_d = Number.MAX_VALUE;
+    let min_i = -1;
+    for (let i = 0, end = array.length; i < end; ++i) {
+        const d = fn(array[i]);
+        if (min_d > d) {
+            min_d = d;
+            min_i = i;
+        }
+    }
+    return min_i;
+}
+</script>
+
+</body>
+</html>

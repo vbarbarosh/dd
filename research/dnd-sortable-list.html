@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://unpkg.com/@vbarbarosh/smcss@0.8.1/dist/reset.css" rel="stylesheet">
+    <link href="https://unpkg.com/@vbarbarosh/smcss@0.8.1/dist/sm.css" rel="stylesheet">
+    <title>dnd • sortable list</title>
+    <style>
+        li {
+            transition: all 0.1s;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+
+    <transition-group tag="ul" class="mg5 mi5 flex-row flex-wrap flex-align-start">
+        <li v-for="item in items"
+            v-on:mousedown="mousedown_item($event, item)"
+            v-bind:key="item.id"
+            v-bind:class="{red: selection.includes(item)}"
+            class="flex-row flex-align-center w200 mi5 border">
+            <span>{{ item.id }} {{ item.title }}</span>
+        </li>
+    </transition-group>
+
+    <div v-if="dnd_feedback" v-bind:style="dnd_feedback.style" class="fix yellow bs1 o25"></div>
+
+</div>
+
+<script src="https://unpkg.com/jquery@3.6.3/dist/jquery.js"></script>
+<script src="https://unpkg.com/bluebird@3.7.2/js/browser/bluebird.js"></script>
+<script src="https://unpkg.com/vue@2.7.14/dist/vue.js"></script>
+<script src="../dist/dd.js"></script>
+<script>
+new Vue({
+    el: '#app',
+    data: {
+        items: [
+            {id: 1, title: 'Praesent eleifend'},
+            {id: 2, title: 'Pellentesque sed venenatis eros, non auctor arcu'},
+            {id: 3, title: 'Ut scelerisque, erat et tempus tincidunt, risus est vehicula urna, ac porttitor risus nibh vitae lorem. Morbi posuere laoreet quam sed pretium. Sed scelerisque velit elit, sed tristique quam suscipit non. Donec gravida tristique justo, ac sagittis enim faucibus ac. Cras porttitor erat non quam iaculis, vel interdum mauris lacinia. Duis quis leo feugiat, ultrices nulla finibus, lacinia tellus. Pellentesque eu tortor est. Praesent quam felis, interdum ut risus eget, ornare tempus erat'},
+            {id: 4, title: 'Cras luctus, ante a fermentum congue'},
+            {id: 5, title: 'Aliquam in vestibulum dolor'},
+            {id: 6, title: 'Pellentesque ut lorem dui'},
+            {id: 7, title: 'Proin ultricies, sapien vitae venenatis placerat'},
+            {id: 8, title: 'Mauris lacus nunc'},
+            {id: 9, title: 'Nunc facilisis turpis ac erat blandit consequat et vel nibh'},
+            {id: 10, title: 'Sed ultrices ac arcu quis malesuada'},
+            // {id: 11, title: 'Cras ornare cursus accumsan. Nam semper magna eu ullamcorper gravida.'},
+            // {id: 12, title: 'Sed id posuere felis. Sed dapibus ex feugiat bibendum mollis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Sed porttitor velit sit amet rutrum porta. Quisque ac rhoncus ante. In vitae turpis cursus, dapibus sem vitae, euismod nibh. Integer porta a quam et faucibus.'},
+            // {id: 13, title: 'Nullam eu sapien dolor. Pellentesque eu purus nec erat rhoncus ultricies. Maecenas et dictum erat, at condimentum massa. Morbi dapibus tincidunt purus, nec molestie est volutpat quis. Nam facilisis augue orci, rutrum ullamcorper odio aliquam eu. Quisque elementum, augue non posuere commodo, odio nisl fringilla lectus, eu vestibulum nisi justo nec turpis. Quisque sagittis nunc et tellus fringilla, et gravida diam interdum. Morbi nec vulputate mi. Pellentesque eget quam orci. Aenean blandit ornare odio vitae vehicula. In hac habitasse platea dictumst. Morbi efficitur blandit blandit. Interdum et malesuada fames ac ante ipsum primis in faucibus. Curabitur nunc orci, aliquet vulputate magna a, consectetur scelerisque libero. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae'},
+            // {id: 14, title: 'Proin fermentum nunc eu dui dictum, ac bibendum est laoreet. Nunc id lorem et felis ornare faucibus quis ut libero. In hac habitasse platea dictumst. Duis dapibus, eros lobortis mollis interdum, neque ex suscipit libero, pellentesque congue tortor nunc at mauris. Ut vestibulum et ex sed scelerisque. Aliquam vestibulum, magna id ultricies convallis, est dui pellentesque tellus, id tristique sapien ante in nisl. Nunc et odio malesuada, scelerisque metus non, bibendum lectus. Aliquam vitae placerat diam. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Duis rutrum ipsum sit amet porttitor laoreet. Integer congue vestibulum quam non scelerisque. Sed consectetur quis neque nec sollicitudin. Integer dictum facilisis libero. Nulla iaculis interdum magna in euismod. Nam et imperdiet turpis, sed fringilla urna. Suspendisse potenti'},
+            // {id: 15, title: 'Pellentesque elementum enim a neque ultricies, nec venenatis magna tristique. Suspendisse augue velit, volutpat sit amet felis ut, pulvinar rutrum magna. Nullam bibendum tincidunt tempor. Maecenas mollis non neque in iaculis. Nam varius a nibh at dictum. Donec id magna sed felis vehicula ultrices. Nullam ac nulla rhoncus, ultricies velit malesuada, molestie tellus. Maecenas enim purus, tempor id enim nec, ultricies scelerisque odio. Nunc sed blandit lectus. Phasellus congue eu diam id porta. Quisque ornare, arcu sit amet lacinia mollis, nisl magna convallis lorem, eu semper orci urna nec nulla. In ac lorem efficitur, hendrerit nibh vel, iaculis lectus. Sed congue nisi ac mi mollis vulputate'},
+        ],
+        selection: [],
+        dnd_feedback: null,
+    },
+    methods: {
+        mousedown_item: function (event, item) {
+            const _this = this;
+            const parent = event.currentTarget.parentElement;
+            const parent_r0 = parent.getBoundingClientRect();
+            const elem_r0 = event.currentTarget.getBoundingClientRect();
+            const rects = elem_cut(event.currentTarget, children => children.map(v => v.getBoundingClientRect()));
+            this.selection = [item];
+            const ancestors = elem_ancestors(parent);
+            dd({
+                event,
+                mixins: [
+                    dd.prevent_default(),
+                    dd.no_pointer_events(),
+                ],
+                begin: function () {
+                    _this.dnd_feedback = {style: ''};
+                },
+                end: function () {
+                    _this.dnd_feedback = null;
+                },
+                update: function ({x, y, x0, y0}) {
+                    const parent_r1 = parent.getBoundingClientRect();
+                    const ox = x0 - elem_r0.left;
+                    const oy = y0 - elem_r0.top;
+                    const sx = parent_r1.left - parent_r0.left;
+                    const sy = parent_r1.top - parent_r0.top;
+                    _this.dnd_feedback.style = `left:${px(x-ox)};top:${px(y-oy)};width:${px(elem_r0.width)};height:${px(elem_r0.height)}`;
+                    const i = _this.items.indexOf(item);
+                    const j = array_closest(rects, v => point_distance_sqr(x-ox-sx, y-oy-sy, v.left, v.top));
+                    const scrollpos = ancestors.map(elem_scrollget);
+                    _this.items.splice(i, 1);
+                    _this.items.splice(j, 0, item);
+                    _this.$nextTick(function () {
+                        ancestors.forEach((elem,i) => elem_scrollset(elem, scrollpos[i]));
+                    });
+                },
+            });
+        },
+    },
+});
+function px(value) {
+    return value ? `${value}px` : '0';
+}
+function elem_scrollget(elem) {
+    return {x: elem.scrollLeft, y: elem.scrollTop};
+}
+function elem_scrollset(elem, p) {
+    elem.scrollTo(p.x, p.y);
+}
+function elem_ancestors(elem) {
+    const out = [];
+    for (let p = elem, i = 0; p && i < 50; p = p.parentElement, ++i) {
+        out.push(p);
+    }
+    return out;
+}
+function elem_cut(elem, fn) {
+    const {parentElement, nextSibling} = elem;
+    const r = parentElement.getBoundingClientRect();
+    const h = parentElement.style.height;
+    parentElement.style.height = px(r.height);
+    parentElement.appendChild(elem);
+    try {
+        return fn(Array.from(parentElement.children));
+    }
+    finally {
+        parentElement.insertBefore(elem, nextSibling);
+        parentElement.style.height = h;
+    }
+}
+function point_distance(x1, y1, x2, y2)
+{
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    return Math.sqrt(dx*dx + dy*dy);
+}
+function point_distance_sqr(x1, y1, x2, y2)
+{
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    return dx*dx + dy*dy;
+}
+function array_closest(array, fn)
+{
+    let min_d = Number.MAX_VALUE;
+    let min_i = -1;
+    for (let i = 0, end = array.length; i < end; ++i) {
+        const d = fn(array[i]);
+        if (min_d > d) {
+            min_d = d;
+            min_i = i;
+        }
+    }
+    return min_i;
+}
+</script>
+
+</body>
+</html>
