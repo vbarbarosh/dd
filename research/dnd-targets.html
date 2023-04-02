@@ -35,12 +35,12 @@
                 <span>{{ item.id }} {{ item.title }}</span>
             </li>
         </ul>
-        <ul ref="target3" class="xm xp mg5 w200 dashed">
+        <ul ref="target3" class="flex-row flex-wrap flex-align-start xm xp mg5 mi5 dashed">
             <li v-for="item in items3"
                 v-on:mousedown="mousedown_item($event, item)"
                 v-bind:key="item.id"
                 v-bind:class="{red: selection.includes(item)}"
-                class="flex-row flex-align-center mi5 border">
+                class="flex-row flex-align-center w200 mi5 border">
                 <span>{{ item.id }} {{ item.title }}</span>
             </li>
         </ul>
@@ -105,6 +105,7 @@ new Vue({
                 scrollbars.push(...elem_ancestors(container));
             });
             let target_prev;
+            let mix;
             dd({
                 event,
                 mixins: [
@@ -135,9 +136,14 @@ new Vue({
                             elem_item.style.display = display;
                         }
                     });
+                    mix = dnd_debug_points(targets.map(v => v.p));
+                    mix.begin();
                 },
                 end: function () {
                     _this.dnd_feedback = null;
+                    if (mix) {
+                        mix.end();
+                    }
                 },
                 update: function ({x, y, x0, y0}) {
                     const parent_r1 = parent.getBoundingClientRect();
@@ -161,6 +167,22 @@ new Vue({
 });
 function px(value) {
     return value ? `${value}px` : '0';
+}
+function dnd_debug_points(points) {
+    let svg;
+    return {
+        begin: function () {
+            svg = jQuery('<svg class="fix-f ww hh no-pointer-events" xmlns="http://www.w3.org/2000/svg" />');
+            points.forEach(function (p) {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                svg.append(jQuery(circle).attr('r', 2).attr('cx', p.x).attr('cy', p.y));
+            });
+            svg.appendTo(document.body);
+        },
+        end: function () {
+            svg.remove();
+        },
+    };
 }
 function elem_scrollget(elem) {
     return {x: elem.scrollLeft, y: elem.scrollTop};

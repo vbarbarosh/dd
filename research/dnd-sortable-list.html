@@ -72,6 +72,7 @@ new Vue({
                 mixins: [
                     dd.prevent_default(),
                     dd.no_pointer_events(),
+                    dnd_debug_points(rects.map(v => ({x: v.left, y: v.top}))),
                 ],
                 begin: function () {
                     _this.dnd_feedback = {style: ''};
@@ -99,6 +100,22 @@ new Vue({
         },
     },
 });
+function dnd_debug_points(points) {
+    let svg;
+    return {
+        begin: function () {
+            svg = jQuery('<svg class="fix-f ww hh no-pointer-events" xmlns="http://www.w3.org/2000/svg" />');
+            points.forEach(function (p) {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                svg.append(jQuery(circle).attr('r', 2).attr('cx', p.x).attr('cy', p.y));
+            });
+            svg.appendTo(document.body);
+        },
+        end: function () {
+            svg.remove();
+        },
+    };
+}
 function px(value) {
     return value ? `${value}px` : '0';
 }

@@ -33,3 +33,7 @@ Watch for middle mouse button only
     if (event.button == 0) {
         dnd({event})
     }
+
+Attach mixin in the middle of action
+
+    dd.mixin(dd.svg_points(...))
