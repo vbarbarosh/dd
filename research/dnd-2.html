@@ -6,7 +6,7 @@
 <script>
 document.querySelector('#button').addEventListener('mousedown', function (event) {
     dnd({
-        event, 
+        event,
         threshold: function ({dx, dy}) {
             return Math.sqrt(dx*dx + dy*dy) > 5;
         },
