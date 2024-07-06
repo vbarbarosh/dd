@@ -47,7 +47,7 @@ This abstraction comes from the following observations:
   events. As a result `dd` will not call `begin` not `update`
   handlers ([Events and disabled form fields](https://jakearchibald.com/2017/events-and-disabled-form-fields/)).
 
-## Links
+## Resources
 
 * https://github.com/STRML/react-grid-layout
 * https://github.com/STRML/react-draggable
