@@ -7,9 +7,18 @@
 
 let active = 0;
 
+const init = [];
+
+document.addEventListener('mousedown', function (event) {
+    init.splice(0).forEach(fn => fn(event));
+});
+
 function dd(context)
 {
-    begin();
+    init.push(function (event) {
+        context.event = event;
+        begin();
+    });
 
     function begin() {
         active++;
