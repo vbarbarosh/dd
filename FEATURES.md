@@ -1,8 +1,8 @@
 * ✅ The most basic workflow for working with the mouse: `begin → move → end`
-* ✅ Passing [event] object should be optional
+* Possibility to end operation (e.g. user pressed ESC)
 * Ability to postpone [begin] method (e.g. for implementing [threshold])
-* ✅ Possibility to end operation (e.g. user pressed ESC)
 * Implement [promise] interface (e.g. `await dd().promise()`)
+* Passing [event] object should be optional
 
 ### Mixins
 

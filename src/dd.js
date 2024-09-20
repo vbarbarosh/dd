@@ -1,28 +1,32 @@
 // Features
 // + translate coordinates into client space
 // + handle scroll event
-// + no need to pass an event object
 // + rudimentary support for threshold
+// - no need to pass an event object
 // - prevent execution of several dd in parallel
 // - start when left button was pressed
 // - cancel when mouse button was released outside, then moved inside
 
 let active = 0;
 
-const init = [];
-
-document.addEventListener('mousedown', function (event) {
-    init.splice(0).forEach(fn => fn(event));
-});
+// const init = [];
+//
+// document.addEventListener('mousedown', function (event) {
+//     init.splice(0).forEach(fn => fn(event));
+// });
 
 function dd(context)
 {
     let waiting_threshold = (context.threshold > 0);
 
-    init.push(function (event) {
-        context.event = event;
-        begin();
-    });
+    // 🐛️ This method does not work when [dd] is called from [mousemove] handler.
+    //
+    // init.push(function (event) {
+    //     context.event = event;
+    //     begin();
+    // });
+
+    begin();
 
     function begin() {
         active++;
