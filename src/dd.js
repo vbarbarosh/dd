@@ -94,7 +94,7 @@ function dd(context)
     }
 
     function run(name) {
-        if (waiting_threshold) {
+        if (waiting_threshold && (name !== 'name')) {
             return;
         }
         const tmp = Array.isArray(context.mixins) ? context.mixins.map(v => v[name]) : [];
