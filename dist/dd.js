@@ -107,7 +107,7 @@ function dd(context) {
   }
 
   function run(name) {
-    if (waiting_threshold && name !== 'name') {
+    if (waiting_threshold && name !== 'translate') {
       return;
     }
 
