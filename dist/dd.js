@@ -13,25 +13,26 @@ __webpack_require__.r(__webpack_exports__);
 // Features
 // + translate coordinates into client space
 // + handle scroll event
-// + no need to pass an event object
 // + rudimentary support for threshold
+// - no need to pass an event object
 // - prevent execution of several dd in parallel
 // - start when left button was pressed
 // - cancel when mouse button was released outside, then moved inside
-var active = 0;
-var init = [];
-document.addEventListener('mousedown', function (event) {
-  init.splice(0).forEach(function (fn) {
-    return fn(event);
-  });
-});
+var active = 0; // const init = [];
+//
+// document.addEventListener('mousedown', function (event) {
+//     init.splice(0).forEach(fn => fn(event));
+// });
 
 function dd(context) {
-  var waiting_threshold = context.threshold > 0;
-  init.push(function (event) {
-    context.event = event;
-    begin();
-  });
+  var waiting_threshold = context.threshold > 0; // 🐛️ This method does not work when [dd] is called from [mousemove] handler.
+  //
+  // init.push(function (event) {
+  //     context.event = event;
+  //     begin();
+  // });
+
+  begin();
 
   function begin() {
     active++;
