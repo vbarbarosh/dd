@@ -13,13 +13,25 @@ __webpack_require__.r(__webpack_exports__);
 // Features
 // + translate coordinates into client space
 // + handle scroll event
+// + no need to pass an event object
+// + rudimentary support for threshold
 // - prevent execution of several dd in parallel
 // - start when left button was pressed
 // - cancel when mouse button was released outside, then moved inside
 var active = 0;
+var init = [];
+document.addEventListener('mousedown', function (event) {
+  init.splice(0).forEach(function (fn) {
+    return fn(event);
+  });
+});
 
 function dd(context) {
-  begin();
+  var waiting_threshold = context.threshold > 0;
+  init.push(function (event) {
+    context.event = event;
+    begin();
+  });
 
   function begin() {
     active++;
@@ -38,13 +50,7 @@ function dd(context) {
     context.client_x0 = context.client_x;
     context.client_y0 = context.client_y;
     context.client_dx = 0;
-    context.client_dy = 0; // if (typeof context.begin == 'function') {
-    //     context.begin(context);
-    // }
-    // if (typeof context.update == 'function') {
-    //     context.update(context);
-    // }
-
+    context.client_dy = 0;
     run('begin');
     run('update');
   }
@@ -54,10 +60,7 @@ function dd(context) {
     dd.log('end');
     document.removeEventListener('mousemove', mousemove);
     document.removeEventListener('mouseup', mouseup);
-    document.removeEventListener('scroll', scroll); // if (typeof context.end == 'function') {
-    //     context.end(context);
-    // }
-
+    document.removeEventListener('scroll', scroll);
     run('end');
   }
 
@@ -65,10 +68,7 @@ function dd(context) {
     context.x = context.event.clientX;
     context.y = context.event.clientY;
     context.client_x = context.event.clientX;
-    context.client_y = context.event.clientY; // if (typeof context.translate == 'function') {
-    //     context.translate(context);
-    // }
-
+    context.client_y = context.event.clientY;
     run('translate');
   }
 
@@ -79,12 +79,18 @@ function dd(context) {
     context.dx = context.x - context.x0;
     context.dy = context.y - context.y0;
     context.client_dx = context.client_x - context.client_x0;
-    context.client_dy = context.client_y - context.client_y0; // if (typeof context.move == 'function') {
-    //     context.move(context);
-    // }
-    // if (typeof context.update == 'function') {
-    //     context.update(context);
-    // }
+    context.client_dy = context.client_y - context.client_y0;
+
+    if (waiting_threshold) {
+      var d = Math.sqrt(context.dx * context.dx + context.dy * context.dy);
+
+      if (d < context.threshold) {
+        return;
+      }
+
+      waiting_threshold = false;
+      run('begin');
+    }
 
     run('move');
     run('update');
@@ -97,13 +103,14 @@ function dd(context) {
 
   function scroll(event) {
     context.event = event;
-
-    if (typeof context.update == 'function') {
-      context.update(context);
-    }
+    run('update');
   }
 
   function run(name) {
+    if (waiting_threshold) {
+      return;
+    }
+
     var tmp = Array.isArray(context.mixins) ? context.mixins.map(function (v) {
       return v[name];
     }) : [];

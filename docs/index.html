@@ -57,22 +57,21 @@
     <div class="row">
         <div class="col-md-6">
             <div class="canvas h200">
-                <div v-on:mousedown="mousedown($event, p)" v-bind:style="{top: px(p.y), left: px(p.x)}" class="box">
+                <div v-on:mousedown="mousedown(p)" v-bind:style="{top: px(p.y), left: px(p.x)}" class="box">
                     {{ p.x }},{{ p.y }}
                 </div>
             </div>
         </div>
         <div v-pre class="col-md-6">
-<pre><code class="lang-html">&lt;div v-on:mousedown="mousedown($event, p)" v-bind:style="{top: px(p.y), left: px(p.x)}" class="box">
+<pre><code class="lang-html">&lt;div v-on:mousedown="mousedown(p)" v-bind:style="{top: px(p.y), left: px(p.x)}" class="box">
     {{ p.x }},{{ p.y }}
 &lt;/div>
 </code></pre>
-<pre><code class="lang-js">function mousedown(event, p)
+<pre><code class="lang-js">function mousedown(p)
 {
     const x0 = p.x;
     const y0 = p.y;
     dd({
-        event,
         move: function ({dx, dy}) {
             p.x = x0 + dx;
             p.y = y0 + dy;
@@ -89,7 +88,7 @@
 <script src="https://unpkg.com/bootstrap@4.4.1/dist/js/bootstrap.min.js"></script>
 <script src="https://unpkg.com/vue@2.6.11/dist/vue.min.js"></script>
 <script src="https://unpkg.com/prismjs@1.19.0/prism.js"></script>
-<script src="https://unpkg.com/@vbarbarosh/dd@1.2.4/dist/dd.js"></script>
+<script src="../dist/dd.js"></script>
 
 <script>
 (function () {
@@ -103,11 +102,10 @@
             px: function (v) {
                 return v ? (v + 'px') : 0;
             },
-            mousedown: function (event, p) {
+            mousedown: function (p) {
                 const x0 = p.x;
                 const y0 = p.y;
                 dd({
-                    event,
                     mixins: [dd.prevent_default(), dd.grid(10), dd.no_pointer_events()],
                     move: function ({dx, dy}) {
                         p.x = Math.max(0, Math.min(540-50, x0 + dx));
