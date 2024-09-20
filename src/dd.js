@@ -17,6 +17,8 @@ document.addEventListener('mousedown', function (event) {
 
 function dd(context)
 {
+    let waiting_threshold = (context.threshold > 0);
+
     init.push(function (event) {
         context.event = event;
         begin();
@@ -69,6 +71,14 @@ function dd(context)
         context.dy = context.y - context.y0;
         context.client_dx = context.client_x - context.client_x0;
         context.client_dy = context.client_y - context.client_y0;
+        if (waiting_threshold) {
+            const d = Math.sqrt(context.dx*context.dx + context.dy*context.dy);
+            if (d < context.threshold) {
+                return;
+            }
+            waiting_threshold = false;
+            run('begin');
+        }
         run('move');
         run('update');
     }
@@ -84,6 +94,9 @@ function dd(context)
     }
 
     function run(name) {
+        if (waiting_threshold) {
+            return;
+        }
         const tmp = Array.isArray(context.mixins) ? context.mixins.map(v => v[name]) : [];
         tmp.push(context[name]);
         tmp.filter(v => typeof v == 'function').forEach(fn => fn(context));
