@@ -1,6 +1,8 @@
 // Features
 // + translate coordinates into client space
 // + handle scroll event
+// + no need to pass an event object
+// + rudimentary support for threshold
 // - prevent execution of several dd in parallel
 // - start when left button was pressed
 // - cancel when mouse button was released outside, then moved inside
@@ -38,12 +40,6 @@ function dd(context)
         context.client_y0 = context.client_y;
         context.client_dx = 0;
         context.client_dy = 0;
-        // if (typeof context.begin == 'function') {
-        //     context.begin(context);
-        // }
-        // if (typeof context.update == 'function') {
-        //     context.update(context);
-        // }
         run('begin');
         run('update');
     }
@@ -54,9 +50,6 @@ function dd(context)
         document.removeEventListener('mousemove', mousemove);
         document.removeEventListener('mouseup', mouseup);
         document.removeEventListener('scroll', scroll);
-        // if (typeof context.end == 'function') {
-        //     context.end(context);
-        // }
         run('end');
     }
 
@@ -65,9 +58,6 @@ function dd(context)
         context.y = context.event.clientY;
         context.client_x = context.event.clientX;
         context.client_y = context.event.clientY;
-        // if (typeof context.translate == 'function') {
-        //     context.translate(context);
-        // }
         run('translate');
     }
 
@@ -79,12 +69,6 @@ function dd(context)
         context.dy = context.y - context.y0;
         context.client_dx = context.client_x - context.client_x0;
         context.client_dy = context.client_y - context.client_y0;
-        // if (typeof context.move == 'function') {
-        //     context.move(context);
-        // }
-        // if (typeof context.update == 'function') {
-        //     context.update(context);
-        // }
         run('move');
         run('update');
     }
@@ -96,9 +80,7 @@ function dd(context)
 
     function scroll(event) {
         context.event = event;
-        if (typeof context.update == 'function') {
-            context.update(context);
-        }
+        run('update');
     }
 
     function run(name) {
