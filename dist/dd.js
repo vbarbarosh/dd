@@ -52,6 +52,7 @@ function dd(context) {
     context.client_y0 = context.client_y;
     context.client_dx = 0;
     context.client_dy = 0;
+    run('begin_nothreshold');
     run('begin');
     run('update');
   }
@@ -63,6 +64,7 @@ function dd(context) {
     document.removeEventListener('mouseup', mouseup);
     document.removeEventListener('scroll', scroll);
     run('end');
+    run('end_nothreshold');
   }
 
   function translate() {
@@ -108,8 +110,16 @@ function dd(context) {
   }
 
   function run(name) {
-    if (waiting_threshold && name !== 'translate') {
-      return;
+    if (waiting_threshold) {
+      switch (name) {
+        case 'begin_nothreshold':
+        case 'end_nothreshold':
+        case 'translate':
+          break;
+
+        default:
+          return;
+      }
     }
 
     var tmp = Array.isArray(context.mixins) ? context.mixins.map(function (v) {
