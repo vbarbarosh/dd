@@ -2,121 +2,400 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link href="https://unpkg.com/bootstrap@4.4.1/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://unpkg.com/prismjs@1.19.0/themes/prism-okaidia.css" rel="stylesheet" />
-    <title>Hello dd</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@vbarbarosh/dd — an abstraction for working with the mouse</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖱️</text></svg>">
+    <script>
+    (function () {
+        let theme = null;
+        // Storage access may throw (privacy modes, opaque origins)
+        try { theme = localStorage.getItem('theme'); } catch (e) {}
+        document.documentElement.dataset.theme = theme
+            || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    })();
+    </script>
     <style>
-        .h200 { height: 200px; }
-        .xborder-ht { border-top: none; border-left: none; border-right: none; }
-        .app-border { border: 1px solid #e7e7e7; }
+        :root {
+            --bg: #f6f7f9;
+            --fg: #1c2330;
+            --muted: #5b6472;
+            --card: #ffffff;
+            --border: #dde1e7;
+            --accent: #2563eb;
+            --code-bg: #eef1f5;
+            --shadow: rgba(15,23,42,0.10);
+            --box: #f88;
+        }
+        html[data-theme="dark"] {
+            --bg: #12161d;
+            --fg: #e6e9ef;
+            --muted: #98a1b3;
+            --card: #1a202b;
+            --border: #2a3240;
+            --accent: #60a5fa;
+            --code-bg: #10141b;
+            --shadow: rgba(0,0,0,0.45);
+            --box: #c05555;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--fg);
+            font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        a { color: var(--accent); text-decoration: none; transition: color 0.15s; }
+        a:hover { text-decoration: underline; }
+        code, pre {
+            font: 13px/1.5 ui-monospace, "SF Mono", Consolas, monospace;
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        code { padding: 1px 5px; }
+        pre { padding: 12px 14px; overflow-x: auto; }
+        pre code { padding: 0; background: none; border: none; }
+        table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+        th, td { text-align: left; padding: 6px 12px; border: 1px solid var(--border); vertical-align: top; }
+        th { background: var(--code-bg); }
+        h1 { font-size: 26px; margin: 0 0 4px; }
+        h2 { font-size: 21px; margin: 42px 0 8px; padding-top: 18px; border-top: 1px solid var(--border); }
+        h3 { font-size: 17px; margin: 24px 0 6px; }
+        .muted { color: var(--muted); }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 10px 24px;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        header .brand { font-weight: 600; color: var(--fg); }
+        header nav { margin-left: auto; display: flex; align-items: center; gap: 18px; }
+        header button {
+            font-size: 16px;
+            line-height: 1;
+            padding: 6px 9px;
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: border-color 0.15s, background-color 0.15s;
+        }
+        header button:hover { border-color: var(--accent); background: var(--code-bg); }
+
+        main { max-width: 920px; margin: 0 auto; padding: 32px 24px 64px; }
+
+        .demo { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; margin: 16px 0; }
+        .demo > * { flex: 1 1 380px; min-width: 0; }
+        .demo pre { margin: 0; }
         .canvas {
             position: relative;
-            background: white;
-            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+            height: 240px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 1px 5px var(--shadow);
+            overflow: hidden;
+            transition: background-color 0.2s, border-color 0.2s;
         }
         .box {
             position: absolute;
-            background: #f88;
             width: 50px;
             height: 50px;
-            font-size: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 10px;
+            background: var(--box);
+            border-radius: 4px;
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            transition: box-shadow 0.15s, outline-color 0.15s;
+            outline: 2px solid transparent;
+        }
+        .box.dragging { outline-color: var(--accent); box-shadow: 0 4px 14px var(--shadow); }
+
+        footer {
+            max-width: 920px;
+            margin: 0 auto;
+            padding: 18px 24px 40px;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light app-border xborder-ht">
-    <a class="navbar-brand" href="#"><small>@vbarbarosh/dd<sub><sub>v1.9.0</sub></sub></small></a>
-    <div class="collapse navbar-collapse">
-        <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-                <a class="nav-link" href="https://github.com/vbarbarosh/dd" target="_blank">
-                    GitHub
-                </a>
-            </li>
-        </ul>
-    </div>
-</nav>
+<header>
+    <a class="brand" href="#">@vbarbarosh/dd<sub><sub>v1.9.0</sub></sub></a>
+    <nav>
+        <a href="#demo">Demo</a>
+        <a href="#api">API</a>
+        <a href="#more-demos">More demos</a>
+        <a href="https://github.com/vbarbarosh/dd" target="_blank">GitHub</a>
+        <button id="theme_button" type="button" aria-label="Toggle color theme">🌙</button>
+    </nav>
+</header>
 
-<div id="app" class="container">
+<main>
 
-    <br>
+    <h1>@vbarbarosh/dd</h1>
+    <p class="muted">An abstraction for working with the mouse — and, since pointer events, with touch and pen.</p>
 
-    <div>
-        <strong>@vbarbarosh/dd</strong>
-        <br>
-        An abstraction for working with the mouse.
-    </div>
+    <p>Every drag interaction has the same skeleton: it begins, the pointer moves, it ends.
+       What you actually care about is <em>how far the pointer traveled from the press point</em>.
+       <code>dd</code> owns that workflow: it attaches document-level listeners, computes deltas,
+       survives scrolling, thresholds, and cancellation — and hands you plain numbers.</p>
 
-    <br>
+<pre><code>npm i @vbarbarosh/dd</code></pre>
 
-    <div class="row">
-        <div class="col-md-6">
-            <div class="canvas h200">
-                <div v-on:mousedown="mousedown(p, $event)" v-bind:style="{top: px(p.y), left: px(p.x)}" class="box">
-                    {{ p.x }},{{ p.y }}
-                </div>
-            </div>
+    <p>Or straight from a CDN (exposes a global <code>dd</code> function):</p>
+
+<pre><code>&lt;script src="https://unpkg.com/@vbarbarosh/dd@1.9.0/dist/dd.js">&lt;/script></code></pre>
+
+    <h2 id="demo">Demo</h2>
+
+    <p>Drag the box. It snaps to a 10px grid and reports its position.</p>
+
+    <div class="demo">
+        <div class="canvas" id="canvas1">
+            <div class="box" id="box1"></div>
         </div>
-        <div v-pre class="col-md-6">
-<pre><code class="lang-html">&lt;div v-on:mousedown="mousedown(p, $event)" v-bind:style="{top: px(p.y), left: px(p.x)}" class="box">
-    {{ p.x }},{{ p.y }}
-&lt;/div>
-</code></pre>
-<pre><code class="lang-js">function mousedown(p, event)
-{
+<pre><code>box.addEventListener('pointerdown', function (event) {
     const x0 = p.x;
     const y0 = p.y;
     dd({
         event,
+        mixins: [dd.prevent_default(), dd.grid(10), dd.no_pointer_events()],
         move: function ({dx, dy}) {
-            p.x = x0 + dx;
-            p.y = y0 + dy;
+            p.x = clamp(x0 + dx, 0, canvas.clientWidth - 50);
+            p.y = clamp(y0 + dy, 0, canvas.clientHeight - 50);
+            render_box(box, p);
         },
     });
-}</code></pre>
-        </div>
+});</code></pre>
     </div>
 
-</div>
+    <h3>Threshold and cancellation</h3>
 
-<script src="https://unpkg.com/jquery@3.4.1/dist/jquery.min.js"></script>
-<script src="https://unpkg.com/popper.js@1.16.0/dist/umd/popper.min.js"></script>
-<script src="https://unpkg.com/bootstrap@4.4.1/dist/js/bootstrap.min.js"></script>
-<script src="https://unpkg.com/vue@2.6.11/dist/vue.min.js"></script>
-<script src="https://unpkg.com/prismjs@1.19.0/prism.js"></script>
+    <p>This one arms after the pointer travels 20px — a stray click won't start a drag.
+       Press <kbd>ESC</kbd> mid-drag (or switch windows) and it snaps back to where it started.</p>
+
+    <div class="demo">
+        <div class="canvas" id="canvas2">
+            <div class="box" id="box2"></div>
+        </div>
+<pre><code>box.addEventListener('pointerdown', function (event) {
+    const x0 = p.x;
+    const y0 = p.y;
+    dd({
+        event,
+        threshold: 20,
+        mixins: [dd.prevent_default(), dd.no_pointer_events()],
+        begin: function () {
+            box.classList.add('dragging');
+        },
+        move: function ({dx, dy}) {
+            p.x = clamp(x0 + dx, 0, canvas.clientWidth - 50);
+            p.y = clamp(y0 + dy, 0, canvas.clientHeight - 50);
+            render_box(box, p);
+        },
+        end: function (ctx) {
+            box.classList.remove('dragging');
+            if (ctx.canceled) {
+                p.x = x0;
+                p.y = y0;
+                render_box(box, p);
+            }
+        },
+    });
+});</code></pre>
+    </div>
+
+    <h2 id="api">API</h2>
+
+    <h3>dd(context)</h3>
+
+    <p>Starts a drag interaction. Call it from a <code>pointerdown</code> (or <code>mousedown</code>)
+       handler and pass the event in — <code>dd</code> throws without it. Document-level listeners are
+       attached immediately (pointer events when the browser supports them, mouse events otherwise)
+       and detached when the interaction ends or is canceled.</p>
+
+    <table>
+        <tr><th>Option</th><th>Description</th></tr>
+        <tr><td><code>event</code></td><td><strong>Required.</strong> The initiating <code>PointerEvent</code> or <code>MouseEvent</code>.</td></tr>
+        <tr><td><code>threshold</code></td><td>Distance in px the pointer must travel before <code>begin</code>/<code>move</code>/<code>update</code> start firing. Deltas keep measuring from the original press point — <code>begin</code> fires with <code>dx/dy ≈ threshold</code>, so a dragged item realigns with the pointer grip.</td></tr>
+        <tr><td><code>mixins</code></td><td>Array of handler objects. For every event, mixin handlers run first (in array order), then the context's own handler.</td></tr>
+    </table>
+
+    <h3>Handlers</h3>
+
+    <p>Any of these can be defined on the context and on mixins. Each receives the context object.</p>
+
+    <table>
+        <tr><th>Handler</th><th>When</th></tr>
+        <tr><td><code>begin</code></td><td>Interaction started (after the threshold was crossed, if any).</td></tr>
+        <tr><td><code>move</code></td><td>Pointer moved.</td></tr>
+        <tr><td><code>update</code></td><td>Anything that requires a re-render: begin, pointer moved, or the page/a container scrolled. Usually the only handler you need.</td></tr>
+        <tr><td><code>end</code></td><td>Interaction finished — released or canceled. Check <code>ctx.canceled</code>.</td></tr>
+        <tr><td><code>translate</code></td><td>Convert client coordinates to your local space: read <code>ctx.client_x/client_y</code>, write <code>ctx.x/ctx.y</code>. Runs before deltas are computed.</td></tr>
+        <tr><td><code>begin_nothreshold</code>, <code>end_nothreshold</code></td><td>Run unconditionally at press and release, even when the threshold was never crossed.</td></tr>
+    </table>
+
+    <h3>Context</h3>
+
+    <table>
+        <tr><th>Field</th><th>Description</th></tr>
+        <tr><td><code>x</code>, <code>y</code></td><td>Current position, after <code>translate</code>.</td></tr>
+        <tr><td><code>x0</code>, <code>y0</code></td><td>Position at press.</td></tr>
+        <tr><td><code>dx</code>, <code>dy</code></td><td>Distance traveled: <code>x - x0</code>, <code>y - y0</code>.</td></tr>
+        <tr><td><code>client_x</code>, <code>client_y</code>, <code>client_x0</code>, <code>client_y0</code>, <code>client_dx</code>, <code>client_dy</code></td><td>Same, in untranslated client coordinates.</td></tr>
+        <tr><td><code>event</code></td><td>The last pointer event seen.</td></tr>
+        <tr><td><code>canceled</code></td><td><code>true</code> when the interaction was canceled: <kbd>ESC</kbd>, the window lost focus, or the browser took over the pointer (<code>pointercancel</code>, e.g. touch scrolling).</td></tr>
+    </table>
+
+    <h3>Built-in mixins</h3>
+
+    <table>
+        <tr><th>Mixin</th><th>Description</th></tr>
+        <tr><td><code>dd.grid(n)</code></td><td>Snap <code>x</code>/<code>y</code> to an <code>n</code>-pixel grid.</td></tr>
+        <tr><td><code>dd.prevent_default()</code></td><td><code>preventDefault()</code> on begin — stops text selection and native drag.</td></tr>
+        <tr><td><code>dd.no_pointer_events()</code></td><td>Disables pointer events on the page during the drag and freezes the cursor, so hover styles and iframes don't interfere.</td></tr>
+    </table>
+
+    <h3>Debugging</h3>
+
+<pre><code>dd.debug = true; // log begin/move/end transitions to the console</code></pre>
+
+    <h2 id="notes">Notes</h2>
+
+    <ul>
+        <li><strong>Touch devices:</strong> initiate from <code>pointerdown</code> and set
+            <code>touch-action: none</code> on the drag handle — otherwise the browser takes over
+            the gesture for scrolling and cancels the pointer.</li>
+        <li><strong>Multi-touch:</strong> the interaction is bound to the initiating pointer;
+            other fingers are ignored.</li>
+        <li><strong>Old browsers:</strong> without <code>PointerEvent</code> support (IE, pre-2019
+            Safari) <code>dd</code> falls back to mouse events automatically.</li>
+        <li><strong>Gotcha:</strong> <code>IFRAME</code> and <code>BUTTON[disabled]</code> swallow
+            pointer events — <code>dd.no_pointer_events()</code> is the usual cure.
+            (<a href="https://jakearchibald.com/2017/events-and-disabled-form-fields/" target="_blank">background</a>)</li>
+    </ul>
+
+    <h2 id="more-demos">More demos</h2>
+
+    <ul>
+        <li><a href="demo1.html">Demo 1</a> — threshold: items arm after 10px of travel</li>
+        <li><a href="demo2.html">Demo 2</a> — sticking to a 50px grid</li>
+        <li><a href="demo3.html">Demo 3</a> — multiple independent items</li>
+    </ul>
+
+</main>
+
+<footer>
+    MIT © Vladimir Barbaros · <a href="https://github.com/vbarbarosh/dd" target="_blank">github.com/vbarbarosh/dd</a>
+</footer>
+
 <script src="../dist/dd.js"></script>
 
 <script>
 (function () {
 
-    new Vue({
-        el: '#app',
-        data: {
-            p: {x: 100, y: 100},
-        },
-        methods: {
-            px: function (v) {
-                return v ? (v + 'px') : 0;
-            },
-            mousedown: function (p, event) {
-                const x0 = p.x;
-                const y0 = p.y;
-                dd({
-                    event,
-                    mixins: [dd.prevent_default(), dd.grid(10), dd.no_pointer_events()],
-                    move: function ({dx, dy}) {
-                        p.x = Math.max(0, Math.min(540-50, x0 + dx));
-                        p.y = Math.max(0, Math.min(200-50, y0 + dy));
-                    },
-                });
-            },
-        }
+    // Theme
+
+    const theme_button = document.querySelector('#theme_button');
+
+    render_theme_button();
+
+    theme_button.addEventListener('click', function () {
+        const next = (document.documentElement.dataset.theme == 'dark') ? 'light' : 'dark';
+        try { localStorage.setItem('theme', next); } catch (e) {}
+        document.documentElement.dataset.theme = next;
+        render_theme_button();
     });
+
+    function render_theme_button()
+    {
+        theme_button.textContent = (document.documentElement.dataset.theme == 'dark') ? '☀️' : '🌙';
+    }
+
+    // Demo: grid
+
+    const canvas1 = document.querySelector('#canvas1');
+    const box1 = document.querySelector('#box1');
+    const p1 = {x: 100, y: 100};
+
+    render_box(box1, p1);
+
+    box1.addEventListener('pointerdown', function (event) {
+        const x0 = p1.x;
+        const y0 = p1.y;
+        dd({
+            event,
+            mixins: [dd.prevent_default(), dd.grid(10), dd.no_pointer_events()],
+            move: function ({dx, dy}) {
+                p1.x = clamp(x0 + dx, 0, canvas1.clientWidth - 50);
+                p1.y = clamp(y0 + dy, 0, canvas1.clientHeight - 50);
+                render_box(box1, p1);
+            },
+        });
+    });
+
+    // Demo: threshold and cancellation
+
+    const canvas2 = document.querySelector('#canvas2');
+    const box2 = document.querySelector('#box2');
+    const p2 = {x: 100, y: 95};
+
+    render_box(box2, p2);
+
+    box2.addEventListener('pointerdown', function (event) {
+        const x0 = p2.x;
+        const y0 = p2.y;
+        dd({
+            event,
+            threshold: 20,
+            mixins: [dd.prevent_default(), dd.no_pointer_events()],
+            begin: function () {
+                box2.classList.add('dragging');
+            },
+            move: function ({dx, dy}) {
+                p2.x = clamp(x0 + dx, 0, canvas2.clientWidth - 50);
+                p2.y = clamp(y0 + dy, 0, canvas2.clientHeight - 50);
+                render_box(box2, p2);
+            },
+            end: function (ctx) {
+                box2.classList.remove('dragging');
+                if (ctx.canceled) {
+                    p2.x = x0;
+                    p2.y = y0;
+                    render_box(box2, p2);
+                }
+            },
+        });
+    });
+
+    function render_box(box, p)
+    {
+        box.style.left = p.x + 'px';
+        box.style.top = p.y + 'px';
+        box.textContent = p.x + ',' + p.y;
+    }
+
+    function clamp(v, min, max)
+    {
+        return Math.max(min, Math.min(max, v));
+    }
 
 })();
 </script>
