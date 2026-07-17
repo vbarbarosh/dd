@@ -33,7 +33,9 @@ function dd(context)
         dd.log('begin');
         document.addEventListener('mousemove', mousemove);
         document.addEventListener('mouseup', mouseup);
-        document.addEventListener('scroll', scroll);
+        // [scroll] does not bubble; capture is the only way to see
+        // scrolls happening inside nested containers.
+        document.addEventListener('scroll', scroll, {capture: true});
         // Event is required to read clientX, clientY values. Calling
         // `preventDefault` would narrow its use cases.
         // context.event.preventDefault();
@@ -56,7 +58,7 @@ function dd(context)
         dd.log('end');
         document.removeEventListener('mousemove', mousemove);
         document.removeEventListener('mouseup', mouseup);
-        document.removeEventListener('scroll', scroll);
+        document.removeEventListener('scroll', scroll, {capture: true});
         run('end');
         run('end_nothreshold');
     }
@@ -94,8 +96,16 @@ function dd(context)
         end();
     }
 
-    function scroll(event) {
-        context.event = event;
+    function scroll() {
+        dd.log('scroll');
+        // [context.event] keeps the last mouse event: a scroll event has
+        // no clientX/clientY, but translate mixins may depend on scroll
+        // offsets, so coordinates should be recalculated.
+        translate();
+        context.dx = context.x - context.x0;
+        context.dy = context.y - context.y0;
+        context.client_dx = context.client_x - context.client_x0;
+        context.client_dy = context.client_y - context.client_y0;
         run('update');
     }
 
