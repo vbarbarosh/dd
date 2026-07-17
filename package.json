@@ -13,7 +13,7 @@
     "dist/*.js"
   ],
   "scripts": {
-    "build": "NODE_OPTIONS=--openssl-legacy-provider webpack",
+    "build": "webpack",
     "test": "mocha"
   },
   "repository": {
