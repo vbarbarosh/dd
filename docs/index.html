@@ -93,6 +93,17 @@
 
         main { max-width: 920px; margin: 0 auto; padding: 32px 24px 64px; }
 
+        .cover {
+            display: block;
+            width: 100%;
+            height: auto;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            transition: border-color 0.2s;
+        }
+        html[data-theme="dark"] .cover-light { display: none; }
+        html[data-theme="light"] .cover-dark { display: none; }
+
         .demo { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; margin: 16px 0; }
         .demo > * { flex: 1 1 380px; min-width: 0; }
         .demo pre { margin: 0; }
@@ -149,7 +160,9 @@
 
 <main>
 
-    <h1>@vbarbarosh/dd</h1>
+    <img class="cover cover-light" src="../img/cover.svg" alt="@vbarbarosh/dd — an abstraction for working with the mouse">
+    <img class="cover cover-dark" src="../img/cover-dark.svg" alt="@vbarbarosh/dd — an abstraction for working with the mouse">
+
     <p class="muted">An abstraction for working with the mouse — and, since pointer events, with touch and pen.</p>
 
     <p>Every drag interaction has the same skeleton: it begins, the pointer moves, it ends.

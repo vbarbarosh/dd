@@ -1,3 +1,5 @@
+![@vbarbarosh/dd](img/cover.svg)
+
 An abstraction for working with the mouse.
 
     dd({
