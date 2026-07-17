@@ -44,7 +44,8 @@
             const {x, y} = item;
             dd({
                 event,
-                mixins: [dd.threshold(10), dd.prevent_default(), dd.no_pointer_events()],
+                threshold: 10,
+                mixins: [dd.prevent_default(), dd.no_pointer_events()],
                 move: function ({dx, dy}) {
                     item.x = x + dx;
                     item.y = y + dy;

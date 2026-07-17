@@ -19,6 +19,10 @@ let active = 0;
 
 function dd(context)
 {
+    if (!context.event) {
+        throw new Error('dd: passing [event] object is required');
+    }
+
     let waiting_threshold = (context.threshold > 0);
     // [pointerId] is undefined when a MouseEvent was passed in; in that
     // case no filtering is done.

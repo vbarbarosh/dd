@@ -258,4 +258,8 @@ describe('dd', function () {
             window.PointerEvent = saved;
         }
     });
+
+    it('should throw when no event was passed', function () {
+        assert.throws(() => dd({move: () => {}}), /\[event\] object is required/);
+    });
 });
