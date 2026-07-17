@@ -19,7 +19,7 @@ An abstraction for working with the mouse.
 
 ## Using from browser
 
-    <script src="https://unpkg.com/@vbarbarosh/dd@1.3.0/dist/dd.js"></script>
+    <script src="https://unpkg.com/@vbarbarosh/dd@1.9.0/dist/dd.js"></script>
 
 ## Description
 
@@ -62,8 +62,11 @@ press and release, even when the threshold was never crossed.
 
 ## Gotchas
 
+* To drag on touch devices, call `dd` from a `pointerdown` handler and
+  set `touch-action: none` on the drag handle — otherwise the browser
+  takes over the gesture for scrolling and cancels the pointer.
 * `IFRAME` and `BUTTON[disabled]` stops propagation of mouse
-  events. As a result `dd` will not call `begin` not `update`
+  events. As a result `dd` will not call `begin` nor `update`
   handlers ([Events and disabled form fields](https://jakearchibald.com/2017/events-and-disabled-form-fields/)).
 
 ## Resources

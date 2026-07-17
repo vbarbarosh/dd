@@ -14,13 +14,13 @@ case "${1-}"  in
 major|minor|patch)
     ;;
 *)
-    echo usage: release 'major|minor|patch' 2>&1
+    echo usage: release 'major|minor|patch' >&2
     exit 1
     ;;
 esac
 
 if test -n "`git status -s`"; then
-    echo error: there is changes 2>&1
+    echo error: there is changes >&2
     exit 1
 fi
 
@@ -32,9 +32,11 @@ npm run build
 
 version=$(node -e 'console.log(require("./package.json").version)')
 # Update version in docs
-sed -i 's:\(<sub><sub>v\)[0-9]\+\.[0-9]\+\.[0-9]\+\(</sub></sub>\):\1'$version'\2:' docs/index.html README.md
+sed -i 's:\(<sub><sub>v\)[0-9]\+\.[0-9]\+\.[0-9]\+\(</sub></sub>\):\1'$version'\2:' docs/index.html
+# Update version in unpkg urls
+sed -i 's:@vbarbarosh/dd@[0-9]\+\.[0-9]\+\.[0-9]\+:@vbarbarosh/dd@'$version':' README.md docs/*.html
 
-git add package.json package-lock.json dist docs/index.html
+git add package.json package-lock.json dist docs README.md
 git commit -m "release v$version"
 
 # Create a tag
