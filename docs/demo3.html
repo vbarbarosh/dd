@@ -5,17 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://unpkg.com/@vbarbarosh/smcss@0.6.1/dist/sm.css" rel="stylesheet" />
     <title>vbarbarosh/dd • demos • 3</title>
+    <style>
+        .demo-note { max-width: 800px; margin: 0 auto 24px; padding: 16px 20px; background: #f5f8ff; border: 1px solid #d9e4ff; border-radius: 8px; line-height: 1.5; }
+        .demo-note h1 { margin: 0 0 8px; font-size: 18px; }
+        .demo-note p { margin: 6px 0; }
+        .demo-note code, .demo-note kbd { padding: 1px 4px; background: #e8efff; border: 0; border-radius: 3px; font-family: monospace; }
+        .demo-note ol { margin: 8px 0 0; padding-left: 22px; }
+    </style>
 </head>
 <body>
 
 <br>
 
 <div class="w800 ma flex-row">
-    <p>Waiting for a threshold. <strong>Net Yet Implemented</strong></p>
+    <p>Canceling a drag and rolling back.</p>
     <p class="mla"><a href="demo1.html">demo1</a> <a href="demo2.html">demo2</a> <span>demo3</span></p>
 </div>
 
 <br>
+
+<section class="demo-note">
+    <h1>Cancellation and rollback</h1>
+    <p><strong>What it is:</strong> A drag can be canceled with <kbd>Escape</kbd> (or when the window loses focus). The <code>end</code> handler checks <code>ctx.canceled</code> and restores the square's starting position.</p>
+    <p><strong>How to use it:</strong></p>
+    <ol>
+        <li>Drag a square to a new position and release normally; it stays there.</li>
+        <li>Drag it again, keep holding the pointer, and press <kbd>Escape</kbd>.</li>
+        <li>The canceled drag ends immediately and the square jumps back to where that drag began.</li>
+    </ol>
+</section>
 
 <div id="app" class="rel w800 h400 ma bs5 rainbow">
 
@@ -44,10 +62,17 @@
             const {x, y} = item;
             dd({
                 event,
-                mixins: [dd.prevent_default(), dd.no_pointer_events(), dd.grid(50)],
+                threshold: 10,
+                mixins: [dd.prevent_default(), dd.no_pointer_events()],
                 move: function ({dx, dy}) {
                     item.x = x + dx;
                     item.y = y + dy;
+                },
+                end: function (ctx) {
+                    if (ctx.canceled) {
+                        item.x = x;
+                        item.y = y;
+                    }
                 },
             });
         },

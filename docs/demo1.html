@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://unpkg.com/@vbarbarosh/smcss@0.6.1/dist/sm.css" rel="stylesheet" />
     <title>vbarbarosh/dd • demos • 1</title>
+    <style>
+        .demo-note { max-width: 800px; margin: 0 auto 24px; padding: 16px 20px; background: #f5f8ff; border: 1px solid #d9e4ff; border-radius: 8px; line-height: 1.5; }
+        .demo-note h1 { margin: 0 0 8px; font-size: 18px; }
+        .demo-note p { margin: 6px 0; }
+        .demo-note code { padding: 1px 4px; background: #e8efff; border-radius: 3px; }
+        .demo-note ol { margin: 8px 0 0; padding-left: 22px; }
+    </style>
 </head>
 <body>
 
@@ -16,6 +23,17 @@
 </div>
 
 <br>
+
+<section class="demo-note">
+    <h1>Threshold drag</h1>
+    <p><strong>What it is:</strong> Each square uses <code>threshold: 10</code>, so a click or tiny pointer wobble does not move it. Once the pointer travels 10 pixels, the normal drag handlers begin.</p>
+    <p><strong>How to use it:</strong></p>
+    <ol>
+        <li>Press a square and move only a few pixels; it stays put.</li>
+        <li>Keep moving past 10 pixels; the square starts following the pointer.</li>
+        <li>Release and repeat with another square. Each item keeps its own position.</li>
+    </ol>
+</section>
 
 <div id="app" class="rel w800 h400 ma bs5 rainbow">
 

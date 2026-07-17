@@ -144,41 +144,82 @@
             font-size: 14px;
         }
     </style>
+    <link rel="stylesheet" href="site.css">
 </head>
-<body>
+<body class="home">
 
-<header>
-    <a class="brand" href="#">@vbarbarosh/dd<sub><sub>v1.9.0</sub></sub></a>
-    <nav>
-        <a href="#demo">Demo</a>
-        <a href="#api">API</a>
-        <a href="#more-demos">More demos</a>
-        <a href="https://github.com/vbarbarosh/dd" target="_blank">GitHub</a>
-        <button id="theme_button" type="button" aria-label="Toggle color theme">🌙</button>
-    </nav>
+<header class="site-header">
+    <div class="header-inner">
+        <a class="brand" href="index.html">
+            <span class="brand-badge" aria-hidden="true">dd</span>
+            <span class="brand-name">@vbarbarosh/dd <small>v1.9.0</small></span>
+        </a>
+        <nav aria-label="Main navigation">
+            <a class="nav-secondary" href="#demo">Demo</a>
+            <a class="nav-secondary" href="#api">API</a>
+            <a class="nav-cta" href="playground.html">Try it</a>
+            <a class="nav-github" href="https://github.com/vbarbarosh/dd" target="_blank" rel="noreferrer">GitHub</a>
+            <button id="theme_button" class="theme-switch" type="button" aria-label="Switch color theme">
+                <span class="theme-option theme-option-light" aria-hidden="true">☀</span>
+                <span class="theme-option theme-option-dark" aria-hidden="true">☾</span>
+            </button>
+        </nav>
+    </div>
 </header>
 
 <main>
 
-    <img class="cover cover-light" src="../img/cover.svg" alt="@vbarbarosh/dd — an abstraction for working with the mouse">
-    <img class="cover cover-dark" src="../img/cover-dark.svg" alt="@vbarbarosh/dd — an abstraction for working with the mouse">
+    <section class="home-hero">
+        <div class="hero-copy">
+            <p class="eyebrow">A tiny drag interaction primitive</p>
+            <h1>Pointer math,<br><span>minus the plumbing.</span></h1>
+            <p class="hero-lead"><code>dd</code> turns mouse, touch, and pen gestures into plain coordinates and deltas. It owns document listeners, thresholds, scrolling, and cancellation so your code can focus on the interaction.</p>
+            <div class="hero-actions">
+                <a class="button-link primary" href="playground.html">Open playground →</a>
+                <a class="button-link" href="#api">Explore the API</a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <img class="cover cover-light" src="../img/cover.svg" alt="Diagram of an item dragged from x0,y0 by dx,dy">
+            <img class="cover cover-dark" src="../img/cover-dark.svg" alt="Diagram of an item dragged from x0,y0 by dx,dy">
+        </div>
+    </section>
 
-    <p class="muted">An abstraction for working with the mouse — and, since pointer events, with touch and pen.</p>
+    <section class="install-bar" aria-label="Installation options">
+        <div class="install-option">
+            <span>Install with npm</span>
+            <code>npm i @vbarbarosh/dd</code>
+        </div>
+        <div class="install-option">
+            <span>Or load from a CDN — exposes global dd</span>
+            <code>&lt;script src="https://unpkg.com/@vbarbarosh/dd@1.9.0/dist/dd.js">&lt;/script></code>
+        </div>
+    </section>
 
-    <p>Every drag interaction has the same skeleton: it begins, the pointer moves, it ends.
-       What you actually care about is <em>how far the pointer traveled from the press point</em>.
-       <code>dd</code> owns that workflow: it attaches document-level listeners, computes deltas,
-       survives scrolling, thresholds, and cancellation — and hands you plain numbers.</p>
-
-<pre><code>npm i @vbarbarosh/dd</code></pre>
-
-    <p>Or straight from a CDN (exposes a global <code>dd</code> function):</p>
-
-<pre><code>&lt;script src="https://unpkg.com/@vbarbarosh/dd@1.9.0/dist/dd.js">&lt;/script></code></pre>
+    <section class="feature-grid" aria-label="Library highlights">
+        <article class="feature-card">
+            <span class="feature-number">01</span>
+            <b>Delta-first</b>
+            <p>Get <code>x</code>, <code>y</code>, <code>dx</code>, and <code>dy</code> without rebuilding the pointer lifecycle.</p>
+        </article>
+        <article class="feature-card">
+            <span class="feature-number">02</span>
+            <b>Your coordinate system</b>
+            <p>Translate client coordinates into scrolled, scaled, rotated, or otherwise local worlds.</p>
+        </article>
+        <article class="feature-card">
+            <span class="feature-number">03</span>
+            <b>Safe interaction endings</b>
+            <p>Normal drops and cancellations share one cleanup path, with Escape and lost focus handled.</p>
+        </article>
+    </section>
 
     <h2 id="demo">Demo</h2>
 
     <p>Drag the box. It snaps to a 10px grid and reports its position.</p>
+
+    <p><a href="playground.html"><strong>Open the interactive playground →</strong></a>
+       Tune the grid, threshold, bounds, and cancellation behavior while watching the live context.</p>
 
     <div class="demo">
         <div class="canvas" id="canvas1">
@@ -308,9 +349,10 @@
     <h2 id="more-demos">More demos</h2>
 
     <ul>
+        <li><a href="playground.html">Interactive playground</a> — combine options, inspect events, and copy the generated setup</li>
         <li><a href="demo1.html">Demo 1</a> — threshold: items arm after 10px of travel</li>
         <li><a href="demo2.html">Demo 2</a> — sticking to a 50px grid</li>
-        <li><a href="demo3.html">Demo 3</a> — multiple independent items</li>
+        <li><a href="demo3.html">Demo 3</a> — cancel with Escape and roll back to the drag's starting position</li>
     </ul>
 
 </main>
@@ -320,6 +362,7 @@
 </footer>
 
 <script src="../dist/dd.js"></script>
+<script src="copy-snippets.js"></script>
 
 <script>
 (function () {
@@ -339,7 +382,10 @@
 
     function render_theme_button()
     {
-        theme_button.textContent = (document.documentElement.dataset.theme == 'dark') ? '☀️' : '🌙';
+        const dark = document.documentElement.dataset.theme == 'dark';
+        const label = dark ? 'Switch to light theme' : 'Switch to dark theme';
+        theme_button.setAttribute('aria-label', label);
+        theme_button.title = label;
     }
 
     // Demo: grid
@@ -402,7 +448,7 @@
     {
         box.style.left = p.x + 'px';
         box.style.top = p.y + 'px';
-        box.textContent = p.x + ',' + p.y;
+        box.textContent = Math.round(p.x) + ',' + Math.round(p.y);
     }
 
     function clamp(v, min, max)
