@@ -41,6 +41,25 @@ This abstraction comes from the following observations:
    Or, in other words, you have to convert coordinates from
    screen to local (here is `context.translate`).
 
+## Threshold
+
+Pass `threshold: n` to postpone `begin` until the pointer travels `n`
+pixels away from the press point. Deltas keep measuring from the original
+press point — there is no rebasing at the crossing point — so `begin`
+fires with `dx`/`dy` ≈ threshold and a dragged item realigns with the
+pointer grip instead of lagging behind by the threshold distance:
+
+    dd({
+        event,
+        threshold: 5,
+        begin: function (ctx) {
+            // First call: ctx.dx/ctx.dy are already ≈ 5
+        },
+    });
+
+`begin_nothreshold` and `end_nothreshold` handlers run unconditionally at
+press and release, even when the threshold was never crossed.
+
 ## Gotchas
 
 * `IFRAME` and `BUTTON[disabled]` stops propagation of mouse

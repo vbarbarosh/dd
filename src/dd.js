@@ -112,6 +112,10 @@ function dd(context)
                 return;
             }
             waiting_threshold = false;
+            // No rebasing: deltas keep measuring from the press point,
+            // so [begin] sees dx/dy ≈ threshold and a dragged item
+            // realigns with the pointer grip instead of lagging behind
+            // by the threshold distance forever.
             run('begin');
         }
         run('move');

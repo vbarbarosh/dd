@@ -165,6 +165,19 @@ describe('dd', function () {
         pointerup(150, 50);
     });
 
+    it('should measure deltas from the press point when threshold begins', function () {
+        const begin_deltas = [];
+        const context = {
+            event: pointerdown(100, 50),
+            threshold: 20,
+            begin: ctx => begin_deltas.push({dx: ctx.dx, dy: ctx.dy}),
+        };
+        dd(context);
+        pointermove(150, 50);
+        assert.deepEqual(begin_deltas, [{dx: 50, dy: 0}], 'no rebasing at the crossing point');
+        pointerup(150, 50);
+    });
+
     it('should run only end_nothreshold when released below threshold', function () {
         const calls = [];
         const context = {
