@@ -1,31 +1,42 @@
-var dd;dd =
+var dd;
 /******/ (function() { // webpackBootstrap
-/******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
 /***/ "./src/dd.js":
 /*!*******************!*\
   !*** ./src/dd.js ***!
   \*******************/
-/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+/***/ (function(module) {
 
-__webpack_require__.r(__webpack_exports__);
 // Features
 // + translate coordinates into client space
 // + handle scroll event
 // + rudimentary support for threshold
+// + cancel when ESC is pressed, window loses focus, or pointer is canceled
+// + ignore other pointers (multi-touch) during an active drag
 // - no need to pass an event object
 // - prevent execution of several dd in parallel
 // - start when left button was pressed
 // - cancel when mouse button was released outside, then moved inside
-var active = 0; // const init = [];
+
+var active = 0;
+
+// const init = [];
 //
 // document.addEventListener('mousedown', function (event) {
 //     init.splice(0).forEach(fn => fn(event));
 // });
 
 function dd(context) {
-  var waiting_threshold = context.threshold > 0; // 🐛️ This method does not work when [dd] is called from [mousemove] handler.
+  if (!context.event) {
+    throw new Error('dd: passing [event] object is required');
+  }
+  var waiting_threshold = context.threshold > 0;
+  // [pointerId] is undefined when a MouseEvent was passed in; in that
+  // case no filtering is done.
+  var pointer_id = context.event.pointerId;
+
+  // 🐛️ This method does not work when [dd] is called from [mousemove] handler.
   //
   // init.push(function (event) {
   //     context.event = event;
@@ -33,16 +44,28 @@ function dd(context) {
   // });
 
   begin();
-
   function begin() {
     active++;
     dd.log('begin');
-    document.addEventListener('mousemove', mousemove);
-    document.addEventListener('mouseup', mouseup);
-    document.addEventListener('scroll', scroll); // Event is required to read clientX, clientY values. Calling
+    if (window.PointerEvent) {
+      document.addEventListener('pointermove', pointermove);
+      document.addEventListener('pointerup', pointerup);
+      document.addEventListener('pointercancel', pointercancel);
+    } else {
+      document.addEventListener('mousemove', pointermove);
+      document.addEventListener('mouseup', pointerup);
+    }
+    document.addEventListener('keydown', keydown);
+    window.addEventListener('blur', blur);
+    // [scroll] does not bubble; capture is the only way to see
+    // scrolls happening inside nested containers.
+    document.addEventListener('scroll', scroll, {
+      capture: true
+    });
+    // Event is required to read clientX, clientY values. Calling
     // `preventDefault` would narrow its use cases.
     // context.event.preventDefault();
-
+    context.canceled = false;
     translate();
     context.x0 = context.x;
     context.y0 = context.y;
@@ -56,17 +79,25 @@ function dd(context) {
     run('begin');
     run('update');
   }
-
   function end() {
     active--;
     dd.log('end');
-    document.removeEventListener('mousemove', mousemove);
-    document.removeEventListener('mouseup', mouseup);
-    document.removeEventListener('scroll', scroll);
+    if (window.PointerEvent) {
+      document.removeEventListener('pointermove', pointermove);
+      document.removeEventListener('pointerup', pointerup);
+      document.removeEventListener('pointercancel', pointercancel);
+    } else {
+      document.removeEventListener('mousemove', pointermove);
+      document.removeEventListener('mouseup', pointerup);
+    }
+    document.removeEventListener('keydown', keydown);
+    window.removeEventListener('blur', blur);
+    document.removeEventListener('scroll', scroll, {
+      capture: true
+    });
     run('end');
     run('end_nothreshold');
   }
-
   function translate() {
     context.x = context.event.clientX;
     context.y = context.event.clientY;
@@ -74,41 +105,73 @@ function dd(context) {
     context.client_y = context.event.clientY;
     run('translate');
   }
-
-  function mousemove(event) {
-    dd.log('mousemove');
+  function pointermove(event) {
+    if (pointer_id !== undefined && event.pointerId !== pointer_id) {
+      return;
+    }
+    dd.log('pointermove');
     context.event = event;
     translate();
     context.dx = context.x - context.x0;
     context.dy = context.y - context.y0;
     context.client_dx = context.client_x - context.client_x0;
     context.client_dy = context.client_y - context.client_y0;
-
     if (waiting_threshold) {
       var d = Math.sqrt(context.dx * context.dx + context.dy * context.dy);
-
       if (d < context.threshold) {
         return;
       }
-
       waiting_threshold = false;
+      // No rebasing: deltas keep measuring from the press point,
+      // so [begin] sees dx/dy ≈ threshold and a dragged item
+      // realigns with the pointer grip instead of lagging behind
+      // by the threshold distance forever.
       run('begin');
     }
-
     run('move');
     run('update');
   }
-
-  function mouseup(event) {
+  function pointerup(event) {
+    if (pointer_id !== undefined && event.pointerId !== pointer_id) {
+      return;
+    }
     context.event = event;
     end();
   }
-
-  function scroll(event) {
-    context.event = event;
-    run('update');
+  function pointercancel(event) {
+    if (pointer_id !== undefined && event.pointerId !== pointer_id) {
+      return;
+    }
+    cancel();
+  }
+  function keydown(event) {
+    // IE reports 'Esc'
+    if (event.key === 'Escape' || event.key === 'Esc') {
+      cancel();
+    }
+  }
+  function blur() {
+    cancel();
   }
 
+  // [context.event] keeps the last mouse event: cancellation events
+  // have no usable clientX/clientY.
+  function cancel() {
+    context.canceled = true;
+    end();
+  }
+  function scroll() {
+    dd.log('scroll');
+    // [context.event] keeps the last mouse event: a scroll event has
+    // no clientX/clientY, but translate mixins may depend on scroll
+    // offsets, so coordinates should be recalculated.
+    translate();
+    context.dx = context.x - context.x0;
+    context.dy = context.y - context.y0;
+    context.client_dx = context.client_x - context.client_x0;
+    context.client_dy = context.client_y - context.client_y0;
+    run('update');
+  }
   function run(name) {
     if (waiting_threshold) {
       switch (name) {
@@ -116,12 +179,10 @@ function dd(context) {
         case 'end_nothreshold':
         case 'translate':
           break;
-
         default:
           return;
       }
     }
-
     var tmp = Array.isArray(context.mixins) ? context.mixins.map(function (v) {
       return v[name];
     }) : [];
@@ -133,15 +194,12 @@ function dd(context) {
     });
   }
 }
-
 dd.debug = false;
-
 dd.log = function (method) {
   if (dd.debug) {
     console.log("dd active=".concat(active), method);
   }
 };
-
 dd.grid = function (n) {
   return {
     translate: function translate(ctx) {
@@ -150,7 +208,6 @@ dd.grid = function (n) {
     }
   };
 };
-
 dd.prevent_default = function () {
   return {
     begin: function begin(ctx) {
@@ -158,7 +215,6 @@ dd.prevent_default = function () {
     }
   };
 };
-
 dd.no_pointer_events = function () {
   return {
     begin: function begin(ctx) {
@@ -170,7 +226,9 @@ dd.no_pointer_events = function () {
       document.documentElement.style.pointerEvents = '';
     }
   };
-}; // dd.threshold = function (n) {
+};
+
+// dd.threshold = function (n) {
 //     return {
 //         begin: function ({dx, dy}) {
 //             if (Math.abs(dx) >= n || Math.abs(dy) >= n) {
@@ -194,8 +252,7 @@ dd.no_pointer_events = function () {
 //     };
 // };
 
-
-/* harmony default export */ __webpack_exports__["default"] = (dd);
+module.exports = dd;
 
 /***/ })
 
@@ -207,8 +264,9 @@ dd.no_pointer_events = function () {
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
 /******/ 		// Check if module is in cache
-/******/ 		if(__webpack_module_cache__[moduleId]) {
-/******/ 			return __webpack_module_cache__[moduleId].exports;
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
 /******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = __webpack_module_cache__[moduleId] = {
@@ -218,6 +276,12 @@ dd.no_pointer_events = function () {
 /******/ 		};
 /******/ 	
 /******/ 		// Execute the module function
+/******/ 		if (!(moduleId in __webpack_modules__)) {
+/******/ 			delete __webpack_module_cache__[moduleId];
+/******/ 			var e = new Error("Cannot find module '" + moduleId + "'");
+/******/ 			e.code = 'MODULE_NOT_FOUND';
+/******/ 			throw e;
+/******/ 		}
 /******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
 /******/ 	
 /******/ 		// Return the exports of the module
@@ -225,21 +289,12 @@ dd.no_pointer_events = function () {
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/make namespace object */
-/******/ 	!function() {
-/******/ 		// define __esModule on exports
-/******/ 		__webpack_require__.r = function(exports) {
-/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-/******/ 			}
-/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 		};
-/******/ 	}();
 /******/ 	
-/************************************************************************/
-/******/ 	// module exports must be returned from runtime so entry inlining is disabled
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__("./src/dd.js");
+/******/ 	// This entry module is referenced by other modules so it can't be inlined
+/******/ 	var __webpack_exports__ = __webpack_require__("./src/dd.js");
+/******/ 	dd = __webpack_exports__;
+/******/ 	
 /******/ })()
-.default;
+;
