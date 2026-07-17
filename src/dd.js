@@ -2,6 +2,8 @@
 // + translate coordinates into client space
 // + handle scroll event
 // + rudimentary support for threshold
+// + cancel when ESC is pressed, window loses focus, or pointer is canceled
+// + ignore other pointers (multi-touch) during an active drag
 // - no need to pass an event object
 // - prevent execution of several dd in parallel
 // - start when left button was pressed
@@ -18,6 +20,9 @@ let active = 0;
 function dd(context)
 {
     let waiting_threshold = (context.threshold > 0);
+    // [pointerId] is undefined when a MouseEvent was passed in; in that
+    // case no filtering is done.
+    const pointer_id = context.event.pointerId;
 
     // 🐛️ This method does not work when [dd] is called from [mousemove] handler.
     //
@@ -31,14 +36,24 @@ function dd(context)
     function begin() {
         active++;
         dd.log('begin');
-        document.addEventListener('mousemove', mousemove);
-        document.addEventListener('mouseup', mouseup);
+        if (window.PointerEvent) {
+            document.addEventListener('pointermove', pointermove);
+            document.addEventListener('pointerup', pointerup);
+            document.addEventListener('pointercancel', pointercancel);
+        }
+        else {
+            document.addEventListener('mousemove', pointermove);
+            document.addEventListener('mouseup', pointerup);
+        }
+        document.addEventListener('keydown', keydown);
+        window.addEventListener('blur', blur);
         // [scroll] does not bubble; capture is the only way to see
         // scrolls happening inside nested containers.
         document.addEventListener('scroll', scroll, {capture: true});
         // Event is required to read clientX, clientY values. Calling
         // `preventDefault` would narrow its use cases.
         // context.event.preventDefault();
+        context.canceled = false;
         translate();
         context.x0 = context.x;
         context.y0 = context.y;
@@ -56,8 +71,17 @@ function dd(context)
     function end() {
         active--;
         dd.log('end');
-        document.removeEventListener('mousemove', mousemove);
-        document.removeEventListener('mouseup', mouseup);
+        if (window.PointerEvent) {
+            document.removeEventListener('pointermove', pointermove);
+            document.removeEventListener('pointerup', pointerup);
+            document.removeEventListener('pointercancel', pointercancel);
+        }
+        else {
+            document.removeEventListener('mousemove', pointermove);
+            document.removeEventListener('mouseup', pointerup);
+        }
+        document.removeEventListener('keydown', keydown);
+        window.removeEventListener('blur', blur);
         document.removeEventListener('scroll', scroll, {capture: true});
         run('end');
         run('end_nothreshold');
@@ -71,8 +95,11 @@ function dd(context)
         run('translate');
     }
 
-    function mousemove(event) {
-        dd.log('mousemove');
+    function pointermove(event) {
+        if (pointer_id !== undefined && event.pointerId !== pointer_id) {
+            return;
+        }
+        dd.log('pointermove');
         context.event = event;
         translate();
         context.dx = context.x - context.x0;
@@ -91,8 +118,36 @@ function dd(context)
         run('update');
     }
 
-    function mouseup(event) {
+    function pointerup(event) {
+        if (pointer_id !== undefined && event.pointerId !== pointer_id) {
+            return;
+        }
         context.event = event;
+        end();
+    }
+
+    function pointercancel(event) {
+        if (pointer_id !== undefined && event.pointerId !== pointer_id) {
+            return;
+        }
+        cancel();
+    }
+
+    function keydown(event) {
+        // IE reports 'Esc'
+        if (event.key === 'Escape' || event.key === 'Esc') {
+            cancel();
+        }
+    }
+
+    function blur() {
+        cancel();
+    }
+
+    // [context.event] keeps the last mouse event: cancellation events
+    // have no usable clientX/clientY.
+    function cancel() {
+        context.canceled = true;
         end();
     }
 

@@ -1,5 +1,7 @@
 * ✅ The most basic workflow for working with the mouse: `begin → move → end`
-* Possibility to end operation (e.g. user pressed ESC)
+* ✅ Possibility to end operation (e.g. user pressed ESC, window lost
+  focus, or browser canceled the pointer) — `ctx.canceled` tells a normal
+  drop from a cancellation
 * Ability to postpone [begin] method (e.g. for implementing [threshold])
 * Implement [promise] interface (e.g. `await dd().promise()`)
 * Passing [event] object should be optional
