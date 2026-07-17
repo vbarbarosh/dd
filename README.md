@@ -67,6 +67,9 @@ press and release, even when the threshold was never crossed.
 * To drag on touch devices, call `dd` from a `pointerdown` handler and
   set `touch-action: none` on the drag handle — otherwise the browser
   takes over the gesture for scrolling and cancels the pointer.
+* `dd.no_pointer_events()` disables hit-testing for the whole page, so
+  wheel events stop reaching scrollable containers — skip it when the
+  user should be able to scroll a container mid-drag.
 * `IFRAME` and `BUTTON[disabled]` stops propagation of mouse
   events. As a result `dd` will not call `begin` nor `update`
   handlers ([Events and disabled form fields](https://jakearchibald.com/2017/events-and-disabled-form-fields/)).
