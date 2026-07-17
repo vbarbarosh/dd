@@ -10,7 +10,6 @@ function render_config(mode)
         output: {
             filename: is_development ? 'dd.js' : 'dd.min.js',
             library: 'dd',
-            libraryExport: 'default',
         },
         module: {
             rules: [

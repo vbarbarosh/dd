@@ -9,6 +9,7 @@
   "jsdelivr": "dist/dd.js",
   "files": [
     "src",
+    "!src/*.test.js",
     "dist/*.js"
   ],
   "scripts": {
@@ -28,13 +29,12 @@
   },
   "homepage": "https://github.com/vbarbarosh/dd#readme",
   "mocha": {
-    "require": "test/setup.js",
-    "spec": "test/*_test.js"
+    "require": "test-setup.js",
+    "spec": "src/**/*.test.js"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
     "@babel/preset-env": "^7.12.10",
-    "@babel/register": "^7.29.7",
     "babel-loader": "^8.2.2",
     "jsdom": "^29.1.1",
     "mocha": "^11.7.6",

@@ -187,4 +187,4 @@ dd.no_pointer_events = function () {
 //     };
 // };
 
-export default dd;
+module.exports = dd;
